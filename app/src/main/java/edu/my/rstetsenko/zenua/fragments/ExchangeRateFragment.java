@@ -1,5 +1,11 @@
 package edu.my.rstetsenko.zenua.fragments;
 
+import android.app.Notification;
+import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,6 +33,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
@@ -93,8 +100,8 @@ public class ExchangeRateFragment extends Fragment {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.link_for_resource:
-                    Toast.makeText(getActivity(), Constants.OPEN_EXCHANGE_RATES, Toast.LENGTH_SHORT).show();
-                    //TODO create intent
+                    Intent goToLink = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.OPEN_EXCHANGE_RATES_LINK));
+                    startActivity(goToLink);
                     break;
             }
         }
@@ -111,11 +118,20 @@ public class ExchangeRateFragment extends Fragment {
                 HttpURLConnection urlConnection = null;
                 BufferedReader reader = null;
 
-                try{
+                try {
+                    //http://openexchangerates.org/api/latest.json?app_id=60acbc550c654afd86eea4304cdec3f0
+
+//                    final String BASE_URL = "http://openexchangerates.org/api/latest.json?";
+//                    final String QUERY_PARAM = "app_id";
+//                    final String KEY_PARAM = "60acbc550c654afd86eea4304cdec3f0";
+//
+//                    Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+//                            .appendQueryParameter(QUERY_PARAM, KEY_PARAM).build();
+
                     URL url = new URL(OPEN_EXCHANGE_RATES);
 
                     urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod("GET");
+//                    urlConnection.setRequestMethod("GET");
                     urlConnection.connect();
 
                     InputStream inputStream = urlConnection.getInputStream();
@@ -152,20 +168,23 @@ public class ExchangeRateFragment extends Fragment {
                         }
                     }
                 }
-
                 return null;
             }
 
             @Override
             protected void onPostExecute(String s) {
-                try {
-                    parseJson(s);
-                } catch (JSONException e) {
-                    Log.e(Constants.LOG_TAG, e.getMessage(), e);
-                    e.printStackTrace();
+                if (s != null) {
+                    try {
+                        parseJson(s);
+                    } catch (JSONException e) {
+                        Log.e(Constants.LOG_TAG, e.getMessage(), e);
+                        e.printStackTrace();
+                    }
+                } else if (getActivity() != null && !isConnectedToInternet()) {
+                    Toast.makeText(getActivity(), "Check your Internet connection", Toast.LENGTH_SHORT).show();
                 }
             }
-        };
+        }.execute();
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 //        String location = prefs.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
 //        String temperatureUnits = prefs.getString(getString(R.string.pref_temperature_units_key),getString(R.string.pref_temperature_units_default));
@@ -188,7 +207,7 @@ public class ExchangeRateFragment extends Fragment {
             //openexchangerates.org structure:
             JSONObject wholeJson = new JSONObject(jsonString);
 
-            long receivedTimestamp = wholeJson.getLong(timestamp);
+            long receivedTimestamp = wholeJson.getLong(timestamp) * 1000; //need *1000 when use openexchangerates!
 
             JSONObject ratesJson = wholeJson.getJSONObject(rates);
             
@@ -215,9 +234,14 @@ public class ExchangeRateFragment extends Fragment {
     }
 
     public static String formatDate(long dateInMillis) {
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
         Date date = new Date(dateInMillis);
         return DateFormat.getDateTimeInstance().format(date);
+    }
+
+    private boolean isConnectedToInternet() {
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo net = cm.getActiveNetworkInfo();
+        return net != null && net.isAvailable() && net.isConnected();
     }
 
 }
