@@ -17,8 +17,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,7 +57,9 @@ public class ExchangeRateFragment extends Fragment {
     private TextView usdTextView;
     private TextView eurTextView;
     private TextView rubTextView;
+    private TextView usdRateBuy, usdRateSell, eurRateBuy, eurRateSell, rubRateBuy, rubRateSell;
     private TextView updateDateTextView;
+    private LinearLayout buySellTitles, buySellUSD, buySellEUR, buySellRUB;
     private Button sourceButton;
     private int currentSource;
     private Uri uriToSource;
@@ -66,9 +71,63 @@ public class ExchangeRateFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.exchange_rate_fragment, container, false);
+        usdTextView = (TextView) rootView.findViewById(R.id.usd_rate);
+        eurTextView = (TextView) rootView.findViewById(R.id.eur_rate);
+        rubTextView = (TextView) rootView.findViewById(R.id.rub_rate);
+
+        updateDateTextView = (TextView) rootView.findViewById(R.id.updated);
+        sourceButton = (Button) rootView.findViewById(R.id.link_for_resource);
+
+        buySellTitles = (LinearLayout) rootView.findViewById(R.id.buy_sell_titles);
+
+        buySellUSD = (LinearLayout) rootView.findViewById(R.id.buy_sell_usd);
+        usdRateBuy = (TextView) buySellUSD.findViewById(R.id.usd_rate_buy);
+        usdRateSell = (TextView) buySellUSD.findViewById(R.id.usd_rate_sell);
+
+        buySellEUR = (LinearLayout) rootView.findViewById(R.id.buy_sell_eur);
+        eurRateBuy = (TextView) buySellEUR.findViewById(R.id.eur_rate_buy);
+        eurRateSell = (TextView) buySellEUR.findViewById(R.id.eur_rate_sell);
+
+        buySellRUB = (LinearLayout) rootView.findViewById(R.id.buy_sell_rub);
+        rubRateBuy = (TextView) buySellRUB.findViewById(R.id.rub_rate_buy);
+        rubRateSell = (TextView) buySellRUB.findViewById(R.id.rub_rate_sell);
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        sourceButton.setOnClickListener(onClickListener);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         switchSource(Utility.getPreferredSource(getActivity()));
+        toggleLayout();
+        loadData();
+    }
+
+    private void toggleLayout() {
+        if (currentSource == JSON_RATES || currentSource == OPEN_EXCHANGE_RATES) {
+            usdTextView.setVisibility(View.VISIBLE);
+            eurTextView.setVisibility(View.VISIBLE);
+            rubTextView.setVisibility(View.VISIBLE);
+            buySellUSD.setVisibility(View.GONE);
+            buySellEUR.setVisibility(View.GONE);
+            buySellRUB.setVisibility(View.GONE);
+            buySellTitles.setVisibility(View.GONE);
+        } else {
+            usdTextView.setVisibility(View.GONE);
+            eurTextView.setVisibility(View.GONE);
+            rubTextView.setVisibility(View.GONE);
+            buySellUSD.setVisibility(View.VISIBLE);
+            buySellEUR.setVisibility(View.VISIBLE);
+            buySellRUB.setVisibility(View.VISIBLE);
+            buySellTitles.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -84,37 +143,6 @@ public class ExchangeRateFragment extends Fragment {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.exchange_rate_fragment, container, false);
-        usdTextView = (TextView) rootView.findViewById(R.id.usd_rate);
-        eurTextView = (TextView) rootView.findViewById(R.id.eur_rate);
-        rubTextView = (TextView) rootView.findViewById(R.id.rub_rate);
-        updateDateTextView = (TextView) rootView.findViewById(R.id.updated);
-        sourceButton = (Button) rootView.findViewById(R.id.link_for_resource);
-        return rootView;
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        sourceButton.setOnClickListener(onClickListener);
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (savedInstanceState != null) {
-            currentSource = savedInstanceState.getInt(KEY_CURRENT_SOURCE);
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(KEY_CURRENT_SOURCE, currentSource);
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -160,7 +188,7 @@ public class ExchangeRateFragment extends Fragment {
     private String[] prepareLinks(){
         switch (currentSource){
             case PRIVATE:
-                return null;
+                return new String[]{PRIVATE_CASH_REQUEST};
             case MIN_FIN:
                 return null;
             case JSON_RATES:
@@ -258,6 +286,10 @@ public class ExchangeRateFragment extends Fragment {
         //jsonrates.com structure:
         String utctime = "utctime";
 
+        //private structure:
+        String buy = "buy";
+        String sale = "sale";
+
         double uahRate;
         double eurRate;
         double rubRate;
@@ -265,6 +297,18 @@ public class ExchangeRateFragment extends Fragment {
         try {
             switch (currentSource) {
                 case PRIVATE:
+                    JSONArray privateJsonArray = new JSONArray(jsonString);
+                    JSONObject rubJson = privateJsonArray.getJSONObject(0);
+                    JSONObject eurJson = privateJsonArray.getJSONObject(1);
+                    JSONObject usdJson = privateJsonArray.getJSONObject(2);
+                    setBuySaleRates(
+                            String.format("%.2f", usdJson.getDouble(buy)),
+                            String.format("%.2f", usdJson.getDouble(sale)),
+                            String.format("%.2f", eurJson.getDouble(buy)),
+                            String.format("%.2f", eurJson.getDouble(sale)),
+                            String.format("%.2f", rubJson.getDouble(buy)),
+                            String.format("%.2f", rubJson.getDouble(sale))
+                            );
                     updateDateTextView.setText("");
                     break;
 
@@ -317,6 +361,15 @@ public class ExchangeRateFragment extends Fragment {
         usdTextView.setText(usd);
         eurTextView.setText(eur);
         rubTextView.setText(rub);
+    }
+
+    private void setBuySaleRates(String usdBuy, String usdSell, String eurBuy, String eurSell, String rubBuy, String rubSell) {
+        usdRateBuy.setText(usdBuy);
+        usdRateSell.setText(usdSell);
+        eurRateBuy.setText(eurBuy);
+        eurRateSell.setText(eurSell);
+        rubRateBuy.setText(rubBuy);
+        rubRateSell.setText(rubSell);
     }
 
     public static String formatDate(long dateInMillis) {

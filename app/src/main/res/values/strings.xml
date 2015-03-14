@@ -40,6 +40,9 @@
         <item>4</item>
     </string-array>
 
+    <string name="buy">Buy</string>
+    <string name="sell">Sell</string>
+
     <!--<item>@string/pref_source_private</item>-->
     <!--<item>@string/pref_source_minfin</item>-->
     <!--<item>@string/pref_source_jsonrates</item>-->

@@ -18,6 +18,33 @@
         android:orientation="horizontal"
         android:baselineAligned="false">
 
+        <LinearLayout
+            android:id="@+id/buy_sell_titles"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:textSize="20sp"
+                android:text="@string/buy"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:textSize="20sp"
+                android:text="@string/sell"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
 
         <LinearLayout
             android:layout_width="0dp"
@@ -36,7 +63,35 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingTop="8dp"
                 android:text="@string/usd" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/buy_sell_usd"
+                android:visibility="gone"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/usd_rate_buy"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:layout_height="0dp"
+                    android:textSize="50sp"
+                    tools:text="24.3" />
+
+                <TextView
+                    android:id="@+id/usd_rate_sell"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:gravity="center_vertical"
+                    android:textSize="50sp"
+                    tools:text="26.7" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -57,7 +112,35 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingTop="8dp"
                 android:text="@string/eur" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/buy_sell_eur"
+                android:visibility="gone"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/eur_rate_buy"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:layout_height="0dp"
+                    android:textSize="50sp"
+                    tools:text="24.3" />
+
+                <TextView
+                    android:id="@+id/eur_rate_sell"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:gravity="center_vertical"
+                    android:textSize="50sp"
+                    tools:text="26.7" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -78,7 +161,35 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingTop="8dp"
                 android:text="@string/rub" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/buy_sell_rub"
+                android:visibility="gone"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/rub_rate_buy"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:layout_height="0dp"
+                    android:textSize="50sp"
+                    tools:text="24.3" />
+
+                <TextView
+                    android:id="@+id/rub_rate_sell"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:gravity="center_vertical"
+                    android:textSize="50sp"
+                    tools:text="26.7" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
