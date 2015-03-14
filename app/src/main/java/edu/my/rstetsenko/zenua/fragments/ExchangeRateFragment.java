@@ -46,7 +46,12 @@ public class ExchangeRateFragment extends Fragment {
     private static final String PRIVATE_NBU_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=3";
     private static final String PRIVATE_CASH_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
     private static final String PRIVATE_NON_CASH_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=11";
-    private static final String KEY_CURRENT_SOURCE = "key_current_source";
+    private static final String INTERBANK_REQUEST= "http://api.minfin.com.ua/mb/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //MINFIN api, not works
+    private static final String INTERBANK_BANKS_REQUEST= "http://api.minfin.com.ua/summary/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //banks info from MINFIN
+    private static final String CURRENCY_AUCTION_REQUEST= "http://api.minfin.com.ua/auction/info/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; // MINFIN Currency auction
+    private static final String FINANCE_REQUEST= "http://resources.finance.ua/ua/public/currency-cash.json";
+
+
 
     private static final int PRIVATE = 0;
     private static final int MIN_FIN = 1;
@@ -57,7 +62,7 @@ public class ExchangeRateFragment extends Fragment {
     private TextView usdTextView;
     private TextView eurTextView;
     private TextView rubTextView;
-    private TextView usdRateBuy, usdRateSell, eurRateBuy, eurRateSell, rubRateBuy, rubRateSell;
+    private TextView usdRateBuy, usdRateSell, eurRateBuy, eurRateSell, rubRateBuy, rubRateSell, description;
     private TextView updateDateTextView;
     private LinearLayout buySellTitles, buySellUSD, buySellEUR, buySellRUB;
     private Button sourceButton;
@@ -78,6 +83,7 @@ public class ExchangeRateFragment extends Fragment {
         rubTextView = (TextView) rootView.findViewById(R.id.rub_rate);
 
         updateDateTextView = (TextView) rootView.findViewById(R.id.updated);
+        description = (TextView) rootView.findViewById(R.id.description);
         sourceButton = (Button) rootView.findViewById(R.id.link_for_resource);
 
         buySellTitles = (LinearLayout) rootView.findViewById(R.id.buy_sell_titles);
@@ -190,13 +196,13 @@ public class ExchangeRateFragment extends Fragment {
             case PRIVATE:
                 return new String[]{PRIVATE_CASH_REQUEST};
             case MIN_FIN:
-                return null;
+                return new String[]{INTERBANK_BANKS_REQUEST};
             case JSON_RATES:
                 return new String[]{JSON_RATES_REQUEST};
             case OPEN_EXCHANGE_RATES:
                 return new String[]{OPEN_EXCHANGE_RATES_REQUEST};
             case FINANCE:
-                return null;
+                return new String[]{FINANCE_REQUEST};
             default:
                 return null;
         }
@@ -281,7 +287,7 @@ public class ExchangeRateFragment extends Fragment {
         String eur = "EUR";
         String rub = "RUB";
         //USD is always BASE
-//        String usd = "USD";
+        String usd = "USD";
 
         //jsonrates.com structure:
         String utctime = "utctime";
@@ -290,9 +296,25 @@ public class ExchangeRateFragment extends Fragment {
         String buy = "buy";
         String sale = "sale";
 
-        double uahRate;
-        double eurRate;
-        double rubRate;
+        //minfin structure:
+        String bid = "bid";
+        String ask = "ask";
+
+        //finance.ua structure
+        String data = "date"; //UTC
+        String organizations = "organizations";
+        String orgType = "orgType";
+        //orgType: 1 - banks
+        //orgType: 2 - exchange office
+        //TODO provide choosing banks / exchange office
+        String currencies = "currencies";
+        //ask
+        //bid
+
+
+        double usdRate = 0;
+        double eurRate = 0;
+        double rubRate = 0;
 
         try {
             switch (currentSource) {
@@ -309,45 +331,92 @@ public class ExchangeRateFragment extends Fragment {
                             String.format("%.2f", rubJson.getDouble(buy)),
                             String.format("%.2f", rubJson.getDouble(sale))
                             );
-                    updateDateTextView.setText("");
+                    setUpdateDate("");
+                    setDescription(getString(R.string.private_description_cash));
                     break;
 
                 case MIN_FIN:
-                    updateDateTextView.setText("");
+                    JSONObject interBankJson = new JSONObject(jsonString);
+                    JSONObject usdInterBankJson = interBankJson.getJSONObject(usd.toLowerCase());
+                    JSONObject eurInterBankJson = interBankJson.getJSONObject(eur.toLowerCase());
+                    JSONObject rubInterBankJson = interBankJson.getJSONObject(rub.toLowerCase());
+                    setBuySaleRates(
+                            String.format("%.2f", usdInterBankJson.getDouble(bid)),
+                            String.format("%.2f", usdInterBankJson.getDouble(ask)),
+                            String.format("%.2f", eurInterBankJson.getDouble(bid)),
+                            String.format("%.2f", eurInterBankJson.getDouble(ask)),
+                            String.format("%.2f", rubInterBankJson.getDouble(bid)),
+                            String.format("%.2f", rubInterBankJson.getDouble(ask))
+                    );
+                    setUpdateDate("");
+                    setDescription("");
                     break;
 
                 case JSON_RATES:
                     JSONObject wholeJson = new JSONObject(jsonString);
                     String receivedUTCTime = wholeJson.getString(utctime);
                     JSONObject ratesJson = wholeJson.getJSONObject(rates);
-                    uahRate = ratesJson.getDouble(uah);
+                    usdRate = ratesJson.getDouble(uah);
                     eurRate = ratesJson.getDouble(eur);
                     rubRate = ratesJson.getDouble(rub);
                     setRates(
-                            String.format("%.2f", uahRate),
-                            String.format("%.2f", uahRate / eurRate),
-                            String.format("%.2f", uahRate / rubRate)
+                            String.format("%.2f", usdRate),
+                            String.format("%.2f", usdRate / eurRate),
+                            String.format("%.2f", usdRate / rubRate)
                     );
-                    updateDateTextView.setText(formatUTCDate((receivedUTCTime)));
+                    setUpdateDate(formatUTCDate((receivedUTCTime)));
+                    setDescription("");
                     break;
 
                 case OPEN_EXCHANGE_RATES:
                     JSONObject openExchangeRatesWholeJson = new JSONObject(jsonString);
                     long receivedTimestamp = openExchangeRatesWholeJson.getLong(timestamp) * 1000;
                     JSONObject openExchangeRatesJson = openExchangeRatesWholeJson.getJSONObject(rates);
-                    uahRate = openExchangeRatesJson.getDouble(uah);
+                    usdRate = openExchangeRatesJson.getDouble(uah);
                     eurRate = openExchangeRatesJson.getDouble(eur);
                     rubRate = openExchangeRatesJson.getDouble(rub);
                     setRates(
-                            String.format("%.2f", uahRate),
-                            String.format("%.2f", uahRate / eurRate),
-                            String.format("%.2f", uahRate / rubRate)
+                            String.format("%.2f", usdRate),
+                            String.format("%.2f", usdRate / eurRate),
+                            String.format("%.2f", usdRate / rubRate)
                     );
-                    updateDateTextView.setText(formatDate(receivedTimestamp));
+                    setUpdateDate(formatDate(receivedTimestamp));
+                    setDescription("");
                     break;
 
                 case FINANCE:
-                    updateDateTextView.setText("");
+                    JSONObject financeWholeJson = new JSONObject(jsonString);
+                    JSONArray banksOfUkraine = financeWholeJson.getJSONArray(organizations);
+                    double usdRateSell = 0;
+                    double eurRateSell = 0;
+                    double rubRateSell = 0;
+                    int banksCounter = 0;
+                    for (int i=0; i < banksOfUkraine.length(); i++) {
+                        JSONObject bank = banksOfUkraine.getJSONObject(i);
+                        if (bank.getInt(orgType) == 1) {
+                            banksCounter++;
+                            JSONObject currenciesJson = bank.getJSONObject(currencies);
+                            JSONObject usdFinanceJson = currenciesJson.getJSONObject(usd);
+                            JSONObject eurFinanceJson = currenciesJson.getJSONObject(eur);
+                            JSONObject rubFinanceJson = currenciesJson.getJSONObject(rub);
+                            usdRate += usdFinanceJson.getDouble(bid);
+                            usdRateSell += usdFinanceJson.getDouble(ask);
+                            eurRate += eurFinanceJson.getDouble(bid);
+                            eurRateSell += eurFinanceJson.getDouble(ask);
+                            rubRate += rubFinanceJson.getDouble(bid);
+                            rubRateSell += rubFinanceJson.getDouble(ask);
+                        }
+                    }
+                    setBuySaleRates(
+                            String.format("%.2f", usdRate/banksCounter),
+                            String.format("%.2f", usdRateSell/banksCounter),
+                            String.format("%.2f", eurRate/banksCounter),
+                            String.format("%.2f", eurRateSell/banksCounter),
+                            String.format("%.2f", rubRate/banksCounter),
+                            String.format("%.2f", rubRateSell/banksCounter)
+                    );
+                    setUpdateDate(formatUTCDate(financeWholeJson.getString(data)));
+                    setDescription(getString(R.string.finance_description_average));
                     break;
             }
 
@@ -393,6 +462,24 @@ public class ExchangeRateFragment extends Fragment {
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo net = cm.getActiveNetworkInfo();
         return net != null && net.isAvailable() && net.isConnected();
+    }
+
+    private void setDescription(String descriptionStr) {
+        if (descriptionStr.length() < 1) {
+            description.setVisibility(View.GONE);
+        } else {
+            description.setVisibility(View.VISIBLE);
+            description.setText(descriptionStr);
+        }
+    }
+
+    private void setUpdateDate(String updateDate) {
+        if (updateDate.length() < 1) {
+            updateDateTextView.setVisibility(View.GONE);
+        } else {
+            updateDateTextView.setVisibility(View.VISIBLE);
+            updateDateTextView.setText(updateDate);
+        }
     }
 
 }

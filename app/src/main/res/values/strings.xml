@@ -43,6 +43,9 @@
     <string name="buy">Buy</string>
     <string name="sell">Sell</string>
 
+    <string name="private_description_cash">Cash rate (in offices)</string>
+    <string name="finance_description_average">Average rate of banks</string>
+
     <!--<item>@string/pref_source_private</item>-->
     <!--<item>@string/pref_source_minfin</item>-->
     <!--<item>@string/pref_source_jsonrates</item>-->
