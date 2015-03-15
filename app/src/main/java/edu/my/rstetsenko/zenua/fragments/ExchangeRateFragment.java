@@ -111,7 +111,7 @@ public class ExchangeRateFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        switchSource(Utility.getPreferredSource(getActivity()));
+        switchSource(Utility.getPreferredSource());
         toggleLayout();
         loadData();
     }
@@ -406,6 +406,9 @@ public class ExchangeRateFragment extends Fragment {
                             rubRate += rubFinanceJson.getDouble(bid);
                             rubRateSell += rubFinanceJson.getDouble(ask);
                         }
+                    }
+                    if (banksCounter == 0) {
+                        banksCounter = 1; //in case of incorrect json
                     }
                     setBuySaleRates(
                             String.format("%.2f", usdRate/banksCounter),

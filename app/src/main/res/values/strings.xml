@@ -46,6 +46,9 @@
     <string name="private_description_cash">Cash rate (in offices)</string>
     <string name="finance_description_average">Average rate of banks</string>
 
+    <string name="sound_on">Sound On</string>
+    <string name="sound_off">Sound Off</string>
+
     <!--<item>@string/pref_source_private</item>-->
     <!--<item>@string/pref_source_minfin</item>-->
     <!--<item>@string/pref_source_jsonrates</item>-->
