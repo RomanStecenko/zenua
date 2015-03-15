@@ -124,6 +124,9 @@ public class MainActivity extends ActionBarActivity {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
         }
+//        if (videoView != null && videoView.isPlaying()) {
+//            videoView.pause();
+//        }
         LogMessage("onStop, videoView.pause()"); //videoView.getCurrentPosition() - will be 0 here
     }
 
