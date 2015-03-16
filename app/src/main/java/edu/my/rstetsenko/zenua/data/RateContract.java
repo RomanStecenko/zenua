@@ -47,6 +47,10 @@ public class RateContract {
         //TODO make URI methods if they are needed
     }
 
+    public static String getTableNameFromUri(Uri uri) {
+        return uri.getPathSegments().get(0);
+    }
+
     public static int getSourceIdFromUri(Uri uri) {
         return Integer.parseInt(uri.getPathSegments().get(1));
     }

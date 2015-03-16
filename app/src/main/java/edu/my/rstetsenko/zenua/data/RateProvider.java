@@ -4,7 +4,9 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 public class RateProvider extends ContentProvider {
 
@@ -18,51 +20,34 @@ public class RateProvider extends ContentProvider {
     private static final int DOUBLE_RATE_WITH_SOURCE = 21;
     private static final int DOUBLE_RATE_WITH_SOURCE_AND_DATE = 22;
 
-    //for RATE
-    private static final String rateSourceIdSelection =
-            RateContract.RateEntry.TABLE_NAME+
-                    "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? ";
-    private static final String rateSourceIdWithStartDateSelection =
-            RateContract.RateEntry.TABLE_NAME+
-                    "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
+    private static final String additionForSourceIdSelection = "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? ";
+
+    private static final String additionForSourceIdWithStartDateSelection =
+            "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
                     RateBaseColumns.COLUMN_DATE + " >= ? ";
 
-    private static final String rateSourceIdAndDaySelection =
-            RateContract.RateEntry.TABLE_NAME +
-                    "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
-                    RateBaseColumns.COLUMN_DATE + " = ? ";
-
-    //for DOUBLE_RATE
-    private static final String doubleRateSourceIdSelection =
-            RateContract.DoubleRateEntry.TABLE_NAME+
-                    "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? ";
-    private static final String doubleRateSourceIdWithStartDateSelection =
-            RateContract.DoubleRateEntry.TABLE_NAME+
-                    "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
-                    RateBaseColumns.COLUMN_DATE + " >= ? ";
-
-    private static final String doubleRateSourceIdAndDaySelection =
-            RateContract.DoubleRateEntry.TABLE_NAME +
+    private static final String additionForSourceIdAndDaySelection =
                     "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
                     RateBaseColumns.COLUMN_DATE + " = ? ";
 
     private Cursor getRateBySource(Uri uri, String[] projection, String sortOrder) {
         int sourceId = RateContract.getSourceIdFromUri(uri);
         long startDate = RateContract.getStartDateFromUri(uri);
+        String tableName = RateContract.getTableNameFromUri(uri);
 
         String[] selectionArgs;
         String selection;
 
         if (startDate == 0) {
-            selection = rateSourceIdSelection;
+            selection = tableName + additionForSourceIdSelection;
             selectionArgs = new String[]{String.valueOf(sourceId)};
         } else {
             selectionArgs = new String[]{String.valueOf(sourceId), Long.toString(startDate)};
-            selection = rateSourceIdWithStartDateSelection;
+            selection = tableName + additionForSourceIdWithStartDateSelection;
         }
 
         return mOpenHelper.getReadableDatabase().query(
-                RateContract.RateEntry.TABLE_NAME,
+                tableName,
                 projection,
                 selection,
                 selectionArgs,
@@ -75,19 +60,18 @@ public class RateProvider extends ContentProvider {
     private Cursor getRateBySourceAndDate(Uri uri, String[] projection, String sortOrder) {
         int sourceId = RateContract.getSourceIdFromUri(uri);
         long date = RateContract.getDateFromUri(uri);
+        String tableName = RateContract.getTableNameFromUri(uri);
 
         return mOpenHelper.getReadableDatabase().query(
-                RateContract.RateEntry.TABLE_NAME,
+                tableName,
                 projection,
-                rateSourceIdAndDaySelection,
+                tableName + additionForSourceIdAndDaySelection,
                 new String[]{String.valueOf(sourceId), Long.toString(date)},
                 null,
                 null,
                 sortOrder
         );
     }
-
-    //TODO I made "query" method for Rate table, need to make for Double Rate table, or think how to join this queries
 
     static UriMatcher buildUriMatcher() {
         UriMatcher myUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -129,26 +113,171 @@ public class RateProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        // TODO: Implement this to handle query requests from clients.
-        throw new UnsupportedOperationException("Not yet implemented");
+        Cursor retCursor;
+        switch (sUriMatcher.match(uri)) {
+            // "rate/#/#" "double_rate/#/#"
+            case RATE_WITH_SOURCE_AND_DATE:
+            case DOUBLE_RATE_WITH_SOURCE_AND_DATE: {
+                retCursor = getRateBySourceAndDate(uri, projection, sortOrder);
+                break;
+            }
+            // "rate/#" "double_rate/#"
+            case RATE_WITH_SOURCE:
+            case DOUBLE_RATE_WITH_SOURCE: {
+                retCursor = getRateBySource(uri, projection, sortOrder);
+                break;
+            }
+            // "rate"
+            case RATE: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        RateContract.RateEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            // "double_rate"
+            case DOUBLE_RATE: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        RateContract.DoubleRateEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return retCursor;
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        // TODO: Implement this to handle requests to insert a new row.
-        throw new UnsupportedOperationException("Not yet implemented");
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        Uri returnUri;
+
+        switch (match) {
+            case RATE: {
+                long _id = db.insert(RateContract.RateEntry.TABLE_NAME, null, values);
+                if ( _id > 0 )
+                    returnUri = RateContract.RateEntry.buildRateUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case DOUBLE_RATE: {
+                long _id = db.insert(RateContract.DoubleRateEntry.TABLE_NAME, null, values);
+                if ( _id > 0 )
+                    returnUri = RateContract.DoubleRateEntry.buildDoubleRateUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return returnUri;
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // Implement this to handle requests to delete one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int affectedRows;
+        if (null == selection) selection = "1";
+        switch (match) {
+            case RATE: {
+                affectedRows = db.delete(RateContract.RateEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+            case DOUBLE_RATE: {
+                affectedRows = db.delete(RateContract.DoubleRateEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        if (affectedRows != 0){
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return affectedRows;
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        // TODO: Implement this to handle requests to update one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int affectedRows;
+        switch (match) {
+            case RATE: {
+                affectedRows = db.update(RateContract.RateEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            }
+            case DOUBLE_RATE: {
+                affectedRows = db.update(RateContract.DoubleRateEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        if (affectedRows != 0){
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return affectedRows;
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, @NonNull ContentValues[] values) {
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case RATE:
+                db.beginTransaction();
+                int returnRateCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(RateContract.RateEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnRateCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnRateCount;
+            case DOUBLE_RATE:
+                db.beginTransaction();
+                int returnDoubleRateCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(RateContract.DoubleRateEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnDoubleRateCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnDoubleRateCount;
+            default:
+                return super.bulkInsert(uri, values);
+        }
     }
 
     // in case using tests

@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Utility {
     private static final String KEY_SOUND = "key_sound";
 
@@ -35,5 +39,17 @@ public class Utility {
     public static int getPreferredSource() {
         String source = mPrefs.getString(context.getString(R.string.pref_source_key), context.getString(R.string.pref_source_default));
         return Integer.parseInt(source);
+    }
+
+    public static long getTimeFromUTCDate(String UTCDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        Date date;
+        try {
+            date = dateFormat.parse(UTCDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return 0;
+        }
+        return date.getTime();
     }
 }
