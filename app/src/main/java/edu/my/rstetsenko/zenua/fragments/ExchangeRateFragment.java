@@ -51,8 +51,6 @@ public class ExchangeRateFragment extends Fragment {
     private static final String CURRENCY_AUCTION_REQUEST= "http://api.minfin.com.ua/auction/info/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; // MINFIN Currency auction
     private static final String FINANCE_REQUEST= "http://resources.finance.ua/ua/public/currency-cash.json";
 
-
-
     private static final int PRIVATE = 0;
     private static final int MIN_FIN = 1;
     private static final int JSON_RATES = 2;
