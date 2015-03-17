@@ -3,8 +3,8 @@ package edu.my.rstetsenko.zenua;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.provider.BaseColumns;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,8 +17,8 @@ public class Utility {
 
     public static final String[] RATE_COLUMNS = {
             RateContract.RateEntry.TABLE_NAME + "." + RateBaseColumns._ID,
-            RateBaseColumns.COLUMN_DATE,
             RateBaseColumns.COLUMN_SOURCE_ID,
+            RateBaseColumns.COLUMN_DATE,
             RateContract.RateEntry.COLUMN_USD,
             RateContract.RateEntry.COLUMN_EUR,
             RateContract.RateEntry.COLUMN_RUB
@@ -26,8 +26,8 @@ public class Utility {
 
     public static final String[] DOUBLE_RATE_COLUMNS = {
             RateContract.DoubleRateEntry.TABLE_NAME + "." + RateBaseColumns._ID,
-            RateBaseColumns.COLUMN_DATE,
             RateBaseColumns.COLUMN_SOURCE_ID,
+            RateBaseColumns.COLUMN_DATE,
             RateContract.DoubleRateEntry.COLUMN_USD_BUY,
             RateContract.DoubleRateEntry.COLUMN_USD_SELL,
             RateContract.DoubleRateEntry.COLUMN_EUR_BUY,
@@ -89,5 +89,23 @@ public class Utility {
             return 0;
         }
         return date.getTime();
+    }
+
+    public static long getTimeFromDate(String Date) {
+        Date date;
+        try {
+            date = DateFormat.getDateTimeInstance().parse(Date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return 0;
+        }
+        return date.getTime();
+    }
+
+
+
+    public static String formatDate(long dateInMillis) {
+        Date date = new Date(dateInMillis);
+        return DateFormat.getDateTimeInstance().format(date);
     }
 }
