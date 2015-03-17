@@ -2,6 +2,7 @@ package edu.my.rstetsenko.zenua.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -9,6 +10,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,8 +45,9 @@ import java.util.Date;
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
+import edu.my.rstetsenko.zenua.data.RateContract;
 
-public class ExchangeRateFragment extends Fragment {
+public class ExchangeRateFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
     private static final String OPEN_EXCHANGE_RATES_REQUEST = "http://openexchangerates.org/api/latest.json?app_id=60acbc550c654afd86eea4304cdec3f0";
     private static final String JSON_RATES_REQUEST= "http://jsonrates.com/get/?%20base=USD&apiKey=jr-878f7938dc3db294f030a675358a2ed9";
     private static final String PRIVATE_NBU_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=3";
@@ -51,7 +58,10 @@ public class ExchangeRateFragment extends Fragment {
     private static final String CURRENCY_AUCTION_REQUEST= "http://api.minfin.com.ua/auction/info/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; // MINFIN Currency auction
     private static final String FINANCE_REQUEST= "http://resources.finance.ua/ua/public/currency-cash.json";
 
+    private static final String SHARE_TAG = " #ZenUA";
+    private static final int EXCHANGE_RATE_LOADER_ID = 0;
 
+    private ShareActionProvider mShareActionProvider;
 
     private static final int PRIVATE = 0;
     private static final int MIN_FIN = 1;
@@ -68,6 +78,9 @@ public class ExchangeRateFragment extends Fragment {
     private Button sourceButton;
     private int currentSource;
     private Uri uriToSource;
+    private long updateDate;
+    private boolean isSingleRate = true;
+    private String shareString;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -109,6 +122,12 @@ public class ExchangeRateFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(EXCHANGE_RATE_LOADER_ID, null, this);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         switchSource(Utility.getPreferredSource());
@@ -117,7 +136,8 @@ public class ExchangeRateFragment extends Fragment {
     }
 
     private void toggleLayout() {
-        if (currentSource == JSON_RATES || currentSource == OPEN_EXCHANGE_RATES) {
+        //TODO simplify select of correct table!
+        if (isSingleRate) {
             usdTextView.setVisibility(View.VISIBLE);
             eurTextView.setVisibility(View.VISIBLE);
             rubTextView.setVisibility(View.VISIBLE);
@@ -139,6 +159,11 @@ public class ExchangeRateFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.exchange_rate_fragment_menu, menu);
+        MenuItem shareItem = menu.findItem(R.id.action_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        if (shareString != null) {
+            mShareActionProvider.setShareIntent(getShareIntent());
+        }
     }
 
     @Override
@@ -169,22 +194,27 @@ public class ExchangeRateFragment extends Fragment {
         currentSource = sourceNumber;
         switch (currentSource){
             case PRIVATE:
+                isSingleRate = false;
                 uriToSource = Uri.parse("https://privatbank.ua");
                 sourceButton.setText(getString(R.string.pref_private_label));
                 break;
             case MIN_FIN:
+                isSingleRate = false;
                 uriToSource = Uri.parse("http://www.minfin.com.ua/currency/");
                 sourceButton.setText(getString(R.string.minfin_label));
                 break;
             case JSON_RATES:
+                isSingleRate = true;
                 uriToSource = null;
                 sourceButton.setText(getString(R.string.pref_jsonrates_label));
                 break;
             case OPEN_EXCHANGE_RATES:
+                isSingleRate = true;
                 uriToSource = null;
                 sourceButton.setText(getString(R.string.pref_openexchangerates_label));
                 break;
             case FINANCE:
+                isSingleRate = false;
                 uriToSource = Uri.parse("http://finance.ua/ru/currency");
                 sourceButton.setText(getString(R.string.finance_label));
                 break;
@@ -318,20 +348,22 @@ public class ExchangeRateFragment extends Fragment {
 
         try {
             switch (currentSource) {
+                //TODO replace updating UI to inserting into DB via ContentProvider (ContentResolver)
                 case PRIVATE:
                     JSONArray privateJsonArray = new JSONArray(jsonString);
                     JSONObject rubJson = privateJsonArray.getJSONObject(0);
                     JSONObject eurJson = privateJsonArray.getJSONObject(1);
                     JSONObject usdJson = privateJsonArray.getJSONObject(2);
                     setBuySaleRates(
-                            String.format("%.2f", usdJson.getDouble(buy)),
-                            String.format("%.2f", usdJson.getDouble(sale)),
-                            String.format("%.2f", eurJson.getDouble(buy)),
-                            String.format("%.2f", eurJson.getDouble(sale)),
-                            String.format("%.2f", rubJson.getDouble(buy)),
-                            String.format("%.2f", rubJson.getDouble(sale))
+                            usdJson.getDouble(buy),
+                            usdJson.getDouble(sale),
+                            eurJson.getDouble(buy),
+                            eurJson.getDouble(sale),
+                            rubJson.getDouble(buy),
+                            rubJson.getDouble(sale)
                             );
-                    setUpdateDate("");
+                    updateDate = System.currentTimeMillis();
+                    setUpdateDate(formatDate(updateDate));
                     setDescription(getString(R.string.private_description_cash));
                     break;
 
@@ -341,14 +373,15 @@ public class ExchangeRateFragment extends Fragment {
                     JSONObject eurInterBankJson = interBankJson.getJSONObject(eur.toLowerCase());
                     JSONObject rubInterBankJson = interBankJson.getJSONObject(rub.toLowerCase());
                     setBuySaleRates(
-                            String.format("%.2f", usdInterBankJson.getDouble(bid)),
-                            String.format("%.2f", usdInterBankJson.getDouble(ask)),
-                            String.format("%.2f", eurInterBankJson.getDouble(bid)),
-                            String.format("%.2f", eurInterBankJson.getDouble(ask)),
-                            String.format("%.2f", rubInterBankJson.getDouble(bid)),
-                            String.format("%.2f", rubInterBankJson.getDouble(ask))
+                            usdInterBankJson.getDouble(bid),
+                            usdInterBankJson.getDouble(ask),
+                            eurInterBankJson.getDouble(bid),
+                            eurInterBankJson.getDouble(ask),
+                            rubInterBankJson.getDouble(bid),
+                            rubInterBankJson.getDouble(ask)
                     );
-                    setUpdateDate("");
+                    updateDate = System.currentTimeMillis();
+                    setUpdateDate(formatDate(updateDate));
                     setDescription("");
                     break;
 
@@ -359,12 +392,9 @@ public class ExchangeRateFragment extends Fragment {
                     usdRate = ratesJson.getDouble(uah);
                     eurRate = ratesJson.getDouble(eur);
                     rubRate = ratesJson.getDouble(rub);
-                    setRates(
-                            String.format("%.2f", usdRate),
-                            String.format("%.2f", usdRate / eurRate),
-                            String.format("%.2f", usdRate / rubRate)
-                    );
+                    setRates(usdRate, usdRate / eurRate, usdRate / rubRate);
                     setUpdateDate(formatUTCDate((receivedUTCTime)));
+                    updateDate = Utility.getTimeFromUTCDate(receivedUTCTime);
                     setDescription("");
                     break;
 
@@ -375,12 +405,9 @@ public class ExchangeRateFragment extends Fragment {
                     usdRate = openExchangeRatesJson.getDouble(uah);
                     eurRate = openExchangeRatesJson.getDouble(eur);
                     rubRate = openExchangeRatesJson.getDouble(rub);
-                    setRates(
-                            String.format("%.2f", usdRate),
-                            String.format("%.2f", usdRate / eurRate),
-                            String.format("%.2f", usdRate / rubRate)
-                    );
+                    setRates(usdRate, usdRate / eurRate, usdRate / rubRate);
                     setUpdateDate(formatDate(receivedTimestamp));
+                    updateDate = receivedTimestamp;
                     setDescription("");
                     break;
 
@@ -411,14 +438,16 @@ public class ExchangeRateFragment extends Fragment {
                         banksCounter = 1; //in case of incorrect json
                     }
                     setBuySaleRates(
-                            String.format("%.2f", usdRate/banksCounter),
-                            String.format("%.2f", usdRateSell/banksCounter),
-                            String.format("%.2f", eurRate/banksCounter),
-                            String.format("%.2f", eurRateSell/banksCounter),
-                            String.format("%.2f", rubRate/banksCounter),
-                            String.format("%.2f", rubRateSell/banksCounter)
+                            usdRate/banksCounter,
+                            usdRateSell/banksCounter,
+                            eurRate/banksCounter,
+                            eurRateSell/banksCounter,
+                            rubRate/banksCounter,
+                            rubRateSell/banksCounter
                     );
-                    setUpdateDate(formatUTCDate(financeWholeJson.getString(data)));
+                    String jsonUpdateDate = financeWholeJson.getString(data);
+                    setUpdateDate(formatUTCDate(jsonUpdateDate));
+                    updateDate = Utility.getTimeFromUTCDate(jsonUpdateDate);
                     setDescription(getString(R.string.finance_description_average));
                     break;
             }
@@ -429,19 +458,28 @@ public class ExchangeRateFragment extends Fragment {
         }
     }
 
-    private void setRates(String usd, String eur, String rub) {
-        usdTextView.setText(usd);
-        eurTextView.setText(eur);
-        rubTextView.setText(rub);
+    private void setRates(double usd, double eur, double rub) {
+        usdTextView.setText(String.format("%.2f", usd));
+        eurTextView.setText(String.format("%.2f", eur));
+        rubTextView.setText(String.format("%.2f", rub));
+        shareString = String.format("USD: %.2f EUR: %.2f RUB: %.2f", usd, eur, rub);
     }
 
-    private void setBuySaleRates(String usdBuy, String usdSell, String eurBuy, String eurSell, String rubBuy, String rubSell) {
-        usdRateBuy.setText(usdBuy);
-        usdRateSell.setText(usdSell);
-        eurRateBuy.setText(eurBuy);
-        eurRateSell.setText(eurSell);
-        rubRateBuy.setText(rubBuy);
-        rubRateSell.setText(rubSell);
+    private void setBuySaleRates(double usdBuy, double usdSell, double eurBuy, double eurSell, double rubBuy, double rubSell) {
+        usdRateBuy.setText(String.format("%.2f", usdBuy));
+        usdRateSell.setText(String.format("%.2f", usdSell));
+        eurRateBuy.setText(String.format("%.2f", eurBuy));
+        eurRateSell.setText(String.format("%.2f", eurSell));
+        rubRateBuy.setText(String.format("%.2f", rubBuy));
+        rubRateSell.setText(String.format("%.2f", rubSell));
+        shareString = String.format("USD: %s-%.2f, %s-%.2f EUR: %s-%.2f, %s-%.2f RUB: %s-%.2f, %s-%.2f",
+                getString(R.string.buy), usdBuy,
+                getString(R.string.sell), usdSell,
+                getString(R.string.buy), eurBuy,
+                getString(R.string.sell), eurSell,
+                getString(R.string.buy), rubBuy,
+                getString(R.string.sell), rubSell
+        );
     }
 
     public static String formatDate(long dateInMillis) {
@@ -485,4 +523,77 @@ public class ExchangeRateFragment extends Fragment {
         }
     }
 
+    private Intent getShareIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+//        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareString + SHARE_TAG);
+        return shareIntent;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        int sourceId = Utility.getPreferredSource();
+//        Uri uri;
+//        String[] projection;
+//        switch (sourceId) {
+//            case JSON_RATES:
+//            case OPEN_EXCHANGE_RATES:
+//                uri = RateContract.RateEntry.buildRateSourceIdWithDate(sourceId, updateDate);
+//                projection =  Utility.RATE_COLUMNS;
+//                break;
+//            default:
+//                uri = RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithDate(sourceId, updateDate);
+//                projection = Utility.DOUBLE_RATE_COLUMNS;
+//                break;
+//        }
+        //TODO simplify select of correct table!
+        Uri uri = isSingleRate ?
+                RateContract.RateEntry.buildRateSourceIdWithDate(sourceId, updateDate) :
+                RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithDate(sourceId, updateDate);
+
+        String[] projection = isSingleRate ?
+                Utility.RATE_COLUMNS : Utility.DOUBLE_RATE_COLUMNS;
+
+        return new CursorLoader(
+                getActivity(),
+                uri,
+                projection,
+                null,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (!data.moveToFirst()) {
+            return;
+        }
+        setUpdateDate(formatDate(data.getLong(Utility.COL_DATE)));
+        if (isSingleRate) {
+            setRates(
+                    data.getDouble(Utility.COL_RATE_USD),
+                    data.getDouble(Utility.COL_RATE_EUR),
+                    data.getDouble(Utility.COL_RATE_RUB)
+            );
+        } else {
+            setBuySaleRates(
+                    data.getDouble(Utility.COL_DOUBLE_RATE_USD_BUY),
+                    data.getDouble(Utility.COL_DOUBLE_RATE_USD_SELL),
+                    data.getDouble(Utility.COL_DOUBLE_RATE_EUR_BUY),
+                    data.getDouble(Utility.COL_DOUBLE_RATE_EUR_SELL),
+                    data.getDouble(Utility.COL_DOUBLE_RATE_RUB_BUY),
+                    data.getDouble(Utility.COL_DOUBLE_RATE_RUB_SELL)
+            );
+        }
+
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(getShareIntent());
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {}
 }

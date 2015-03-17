@@ -24,6 +24,20 @@ public class RateContract {
         public static Uri buildRateUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static Uri buildRateSourceId(int sourceId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId)).build();
+        }
+
+        public static Uri buildRateSourceIdWithStartDate(int sourceId, long startDate) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId))
+                    .appendQueryParameter(COLUMN_DATE, Long.toString(startDate)).build();
+        }
+
+        public static Uri buildRateSourceIdWithDate(int sourceId, long date) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId))
+                    .appendPath(Long.toString(date)).build();
+        }
     }
 
     public static final class DoubleRateEntry implements RateBaseColumns {
@@ -44,7 +58,19 @@ public class RateContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        //TODO make URI methods if they are needed
+        public static Uri buildDoubleRateSourceId(int sourceId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId)).build();
+        }
+
+        public static Uri buildDoubleRateSourceIdWithStartDate(int sourceId, long startDate) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId))
+                    .appendQueryParameter(COLUMN_DATE, Long.toString(startDate)).build();
+        }
+
+        public static Uri buildDoubleRateSourceIdWithDate(int sourceId, long date) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId))
+                    .appendPath(Long.toString(date)).build();
+        }
     }
 
     public static String getTableNameFromUri(Uri uri) {

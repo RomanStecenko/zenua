@@ -49,6 +49,8 @@
     <string name="sound_on">Sound On</string>
     <string name="sound_off">Sound Off</string>
 
+    <string name="share">Share</string>
+
     <!--<item>@string/pref_source_private</item>-->
     <!--<item>@string/pref_source_minfin</item>-->
     <!--<item>@string/pref_source_jsonrates</item>-->
