@@ -1,14 +1,11 @@
 package edu.my.rstetsenko.zenua.fragments;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,25 +26,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import edu.my.rstetsenko.zenua.Constants;
+import edu.my.rstetsenko.zenua.FetchRateTask;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
-import edu.my.rstetsenko.zenua.data.RateBaseColumns;
 import edu.my.rstetsenko.zenua.data.RateContract;
 
 public class ExchangeRateFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
@@ -66,12 +48,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
 
     private ShareActionProvider mShareActionProvider;
 
-    private static final int PRIVATE = 0;
-    private static final int MIN_FIN = 1;
-    private static final int JSON_RATES = 2;
-    private static final int OPEN_EXCHANGE_RATES = 3;
-    private static final int FINANCE = 4;
-
     private TextView usdTextView;
     private TextView eurTextView;
     private TextView rubTextView;
@@ -81,7 +57,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     private Button sourceButton;
     private int currentSource;
     private Uri uriToSource;
-    private boolean isSingleRate = true;
+    private Boolean isSingleRate = null;
     private String shareString;
 
     @Override
@@ -195,27 +171,27 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     private void switchSource(int sourceNumber) {
         currentSource = sourceNumber;
         switch (currentSource){
-            case PRIVATE:
+            case Constants.PRIVATE:
                 isSingleRate = false;
                 uriToSource = Uri.parse("https://privatbank.ua");
                 sourceButton.setText(getString(R.string.pref_private_label));
                 break;
-            case MIN_FIN:
+            case Constants.MIN_FIN:
                 isSingleRate = false;
                 uriToSource = Uri.parse("http://www.minfin.com.ua/currency/");
                 sourceButton.setText(getString(R.string.minfin_label));
                 break;
-            case JSON_RATES:
+            case Constants.JSON_RATES:
                 isSingleRate = true;
                 uriToSource = null;
                 sourceButton.setText(getString(R.string.pref_jsonrates_label));
                 break;
-            case OPEN_EXCHANGE_RATES:
+            case Constants.OPEN_EXCHANGE_RATES:
                 isSingleRate = true;
                 uriToSource = null;
                 sourceButton.setText(getString(R.string.pref_openexchangerates_label));
                 break;
-            case FINANCE:
+            case Constants.FINANCE:
                 isSingleRate = false;
                 uriToSource = Uri.parse("http://finance.ua/ru/currency");
                 sourceButton.setText(getString(R.string.finance_label));
@@ -225,15 +201,15 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
 
     private String[] prepareLinks(){
         switch (currentSource){
-            case PRIVATE:
+            case Constants.PRIVATE:
                 return new String[]{PRIVATE_CASH_REQUEST};
-            case MIN_FIN:
+            case Constants.MIN_FIN:
                 return new String[]{INTERBANK_BANKS_REQUEST};
-            case JSON_RATES:
+            case Constants.JSON_RATES:
                 return new String[]{JSON_RATES_REQUEST};
-            case OPEN_EXCHANGE_RATES:
+            case Constants.OPEN_EXCHANGE_RATES:
                 return new String[]{OPEN_EXCHANGE_RATES_REQUEST};
-            case FINANCE:
+            case Constants.FINANCE:
                 return new String[]{FINANCE_REQUEST};
             default:
                 return null;
@@ -241,191 +217,10 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     }
 
     private void loadData(){
-        new AsyncTask<String, Void, String>() {
-            @Override
-            protected String doInBackground(String... params) {
-                if (params == null || params.length == 0) {
-                    return null;
-                }
-
-                HttpURLConnection urlConnection = null;
-                BufferedReader reader = null;
-
-                try {
-                    URL url = new URL(params[0]);
-
-                    urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.connect();
-
-                    InputStream inputStream = urlConnection.getInputStream();
-                    StringBuffer buffer = new StringBuffer();
-                    if (inputStream == null) {
-                        return null;
-                    }
-
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line).append("\n");
-                    }
-
-                    if (buffer.length() == 0) {
-                        return null;
-                    }
-                    return buffer.toString();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.e(Constants.LOG_TAG, "Error ", e);
-                }  finally {
-                    if (urlConnection != null) {
-                        urlConnection.disconnect();
-                    }
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (final IOException e) {
-                            Log.e(Constants.LOG_TAG, "Error closing stream", e);
-                        }
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                if (s != null) {
-                    try {
-                        parseJson(s);
-                    } catch (JSONException e) {
-                        Log.e(Constants.LOG_TAG, e.getMessage(), e);
-                        e.printStackTrace();
-                    }
-                } else if (getActivity() != null && !isConnectedToInternet()) {
-                    Toast.makeText(getActivity(), "Check your Internet connection", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }.execute(prepareLinks());
-    }
-
-    private void parseJson(String jsonString) throws JSONException {
-
-        //openexchangerates.org structure:
-        String timestamp = "timestamp";
-        String rates = "rates";
-        //inside 'rates'
-        String uah = "UAH";
-        String eur = "EUR";
-        String rub = "RUB";
-        //USD is always BASE
-        String usd = "USD";
-
-        //jsonrates.com structure:
-        String utctime = "utctime";
-
-        //private structure:
-        String buy = "buy";
-        String sale = "sale";
-
-        //minfin structure:
-        String bid = "bid";
-        String ask = "ask";
-
-        //finance.ua structure
-        String data = "date"; //UTC
-        String organizations = "organizations";
-        String orgType = "orgType";
-        //orgType: 1 - banks
-        //orgType: 2 - exchange office
-        //TODO provide choosing banks / exchange office
-        String currencies = "currencies";
-        //ask
-        //bid
-
-        try {
-            switch (currentSource) {
-                case PRIVATE:
-                    JSONArray privateJsonArray = new JSONArray(jsonString);
-                    JSONObject rubJson = privateJsonArray.getJSONObject(0);
-                    JSONObject eurJson = privateJsonArray.getJSONObject(1);
-                    JSONObject usdJson = privateJsonArray.getJSONObject(2);
-                    addDoubleRateRow(PRIVATE, System.currentTimeMillis(), usdJson.getDouble(buy), usdJson.getDouble(sale),
-                            eurJson.getDouble(buy), eurJson.getDouble(sale), rubJson.getDouble(buy), rubJson.getDouble(sale));
-                    setDescription(getString(R.string.private_description_cash));
-                    break;
-
-                case MIN_FIN:
-                    JSONObject interBankJson = new JSONObject(jsonString);
-                    JSONObject usdInterBankJson = interBankJson.getJSONObject(usd.toLowerCase());
-                    JSONObject eurInterBankJson = interBankJson.getJSONObject(eur.toLowerCase());
-                    JSONObject rubInterBankJson = interBankJson.getJSONObject(rub.toLowerCase());
-                    addDoubleRateRow(MIN_FIN, System.currentTimeMillis(),
-                            usdInterBankJson.getDouble(bid), usdInterBankJson.getDouble(ask),
-                            eurInterBankJson.getDouble(bid), eurInterBankJson.getDouble(ask),
-                            rubInterBankJson.getDouble(bid), rubInterBankJson.getDouble(ask));
-                    setDescription("");
-                    break;
-
-                case JSON_RATES:
-                    JSONObject wholeJson = new JSONObject(jsonString);
-                    String receivedUTCTime = wholeJson.getString(utctime);
-                    JSONObject ratesJson = wholeJson.getJSONObject(rates);
-                    addRateRow(JSON_RATES, Utility.getTimeFromUTCDate(receivedUTCTime), ratesJson.getDouble(uah),
-                            ratesJson.getDouble(uah) / ratesJson.getDouble(eur), ratesJson.getDouble(uah) / ratesJson.getDouble(rub));
-                    setDescription("");
-                    break;
-
-                case OPEN_EXCHANGE_RATES:
-                    JSONObject openExchangeRatesWholeJson = new JSONObject(jsonString);
-                    long receivedTimestamp = openExchangeRatesWholeJson.getLong(timestamp) * 1000;
-                    JSONObject openExchangeRatesJson = openExchangeRatesWholeJson.getJSONObject(rates);
-                    addRateRow(OPEN_EXCHANGE_RATES, receivedTimestamp, openExchangeRatesJson.getDouble(uah),
-                            openExchangeRatesJson.getDouble(uah) / openExchangeRatesJson.getDouble(eur), openExchangeRatesJson.getDouble(uah) / openExchangeRatesJson.getDouble(rub));
-                    setDescription("");
-                    break;
-
-                case FINANCE:
-                    JSONObject financeWholeJson = new JSONObject(jsonString);
-                    JSONArray banksOfUkraine = financeWholeJson.getJSONArray(organizations);
-                    double usdRateBuy = 0;
-                    double eurRateBuy = 0;
-                    double rubRateBuy = 0;
-                    double usdRateSell = 0;
-                    double eurRateSell = 0;
-                    double rubRateSell = 0;
-                    int banksCounter = 0;
-                    for (int i=0; i < banksOfUkraine.length(); i++) {
-                        JSONObject bank = banksOfUkraine.getJSONObject(i);
-                        if (bank.getInt(orgType) == 1) {
-                            banksCounter++;
-                            JSONObject currenciesJson = bank.getJSONObject(currencies);
-                            JSONObject usdFinanceJson = currenciesJson.getJSONObject(usd);
-                            JSONObject eurFinanceJson = currenciesJson.getJSONObject(eur);
-                            JSONObject rubFinanceJson = currenciesJson.getJSONObject(rub);
-                            usdRateBuy += usdFinanceJson.getDouble(bid);
-                            usdRateSell += usdFinanceJson.getDouble(ask);
-                            eurRateBuy += eurFinanceJson.getDouble(bid);
-                            eurRateSell += eurFinanceJson.getDouble(ask);
-                            rubRateBuy += rubFinanceJson.getDouble(bid);
-                            rubRateSell += rubFinanceJson.getDouble(ask);
-                        }
-                    }
-                    if (banksCounter == 0) {
-                        banksCounter = 1; //in case of incorrect json
-                    }
-                    String jsonUpdateDate = financeWholeJson.getString(data);
-                    addDoubleRateRow(FINANCE, Utility.getTimeFromUTCDate(jsonUpdateDate),
-                            usdRateBuy / banksCounter, usdRateSell / banksCounter,
-                            eurRateBuy / banksCounter, eurRateSell / banksCounter,
-                            rubRateBuy / banksCounter, rubRateSell / banksCounter);
-                    setDescription(getString(R.string.finance_description_average));
-                    break;
-            }
-
-        } catch (JSONException e) {
-            Log.e(Constants.LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
+        if (getActivity() != null && !isConnectedToInternet()) {
+            Toast.makeText(getActivity(), "Check your Internet connection", Toast.LENGTH_SHORT).show();
+        } else {
+            new FetchRateTask(getActivity()).execute(prepareLinks());
         }
     }
 
@@ -527,7 +322,9 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             return;
         }
         setUpdateDate(Utility.formatDate(data.getLong(Utility.COL_DATE)));
-        if (isSingleRate) {
+        if (isSingleRate == null) {
+            Log.e(Constants.LOG_TAG, "Error! Boolean isSingleRate == null! it seems onLoadFinished() starts before variable had initialize");
+        } else if (isSingleRate) {
             setRate(
                     data.getDouble(Utility.COL_RATE_USD),
                     data.getDouble(Utility.COL_RATE_EUR),
@@ -544,6 +341,20 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             );
         }
 
+        switch (data.getInt(Utility.COL_SOURCE_ID)){
+            case Constants.PRIVATE:
+                setDescription(getString(R.string.private_description_cash));
+                break;
+            case Constants.MIN_FIN:
+            case Constants.JSON_RATES:
+            case Constants.OPEN_EXCHANGE_RATES:
+                setDescription("");
+                break;
+            case Constants.FINANCE:
+                setDescription(getString(R.string.finance_description_average));
+                break;
+        }
+
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(getShareIntent());
         }
@@ -551,33 +362,4 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {}
-
-    private void addRateRow(int sourceId, long updateDate, double usd, double eur, double rub) {
-        ContentValues values = new ContentValues();
-        values.put(RateBaseColumns.COLUMN_SOURCE_ID, sourceId);
-        values.put(RateBaseColumns.COLUMN_DATE, updateDate);
-        values.put(RateContract.RateEntry.COLUMN_USD, usd);
-        values.put(RateContract.RateEntry.COLUMN_EUR, eur);
-        values.put(RateContract.RateEntry.COLUMN_RUB, rub);
-        Uri resultUri = getActivity().getContentResolver().insert(RateContract.RateEntry.CONTENT_URI, values);
-        long id = ContentUris.parseId(resultUri);
-        Log.d(Constants.LOG_TAG, "rate, added row id: " + id);
-    }
-
-    private void addDoubleRateRow(int sourceId, long updateDate, double usdBuy, double usdSell,
-                                  double eurBuy, double eurSell, double rubBuy, double rubSell) {
-        ContentValues values = new ContentValues();
-        values.put(RateBaseColumns.COLUMN_SOURCE_ID, sourceId);
-        values.put(RateBaseColumns.COLUMN_DATE, updateDate);
-        values.put(RateContract.DoubleRateEntry.COLUMN_USD_BUY, usdBuy);
-        values.put(RateContract.DoubleRateEntry.COLUMN_USD_SELL, usdSell);
-        values.put(RateContract.DoubleRateEntry.COLUMN_EUR_BUY,  eurBuy);
-        values.put(RateContract.DoubleRateEntry.COLUMN_EUR_SELL, eurSell);
-        values.put(RateContract.DoubleRateEntry.COLUMN_RUB_BUY, rubBuy);
-        values.put(RateContract.DoubleRateEntry.COLUMN_RUB_SELL, rubSell);
-
-        Uri resultUri = getActivity().getContentResolver().insert(RateContract.DoubleRateEntry.CONTENT_URI, values);
-        long id = ContentUris.parseId(resultUri);
-        Log.d(Constants.LOG_TAG, "double rate, added row id: " + id);
-    }
 }
