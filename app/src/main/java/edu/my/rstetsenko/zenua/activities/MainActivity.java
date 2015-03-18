@@ -20,15 +20,18 @@ import edu.my.rstetsenko.zenua.fragments.ExchangeRateFragment;
 public class MainActivity extends ActionBarActivity {
 //    private static final String VIDEO_POSITION = "video_position";
 //    private static final String PLAYER_STATE = "player_state";
+    private final String RATE_FRAGMENT_TAG = "RFTAG";
 
     private VideoView videoView;
     private MenuItem soundItem;
 //    private int videoPosition = 0;
     private MediaPlayer mediaPlayer;
     private boolean isPlayerPrepared = false;
+    private int mSourceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mSourceId = Utility.getPreferredSource();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -61,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ExchangeRateFragment())
+                    .add(R.id.container, new ExchangeRateFragment(), RATE_FRAGMENT_TAG)
                     .commit();
         }
     }
@@ -90,6 +93,15 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         if (Utility.isSoundOn() && isPlayerPrepared && !mediaPlayer.isPlaying()) {
             mediaPlayer.start();
+        }
+        int sourceId = Utility.getPreferredSource();
+        if (sourceId != mSourceId) {
+            ExchangeRateFragment erf = (ExchangeRateFragment) getSupportFragmentManager().findFragmentByTag(RATE_FRAGMENT_TAG);
+            if (null != erf) {
+                erf.onSourceChanged();
+                LogMessage("MyActivity update via onSourceChanged");
+            }
+            mSourceId = sourceId;
         }
         LogMessage("onResume");
     }

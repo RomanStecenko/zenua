@@ -157,31 +157,59 @@ public class FetchRateTask extends AsyncTask<String, Void, Void> {
                     double usdRateSell = 0;
                     double eurRateSell = 0;
                     double rubRateSell = 0;
-                    int banksCounter = 0;
+                    int usdBankCounter = 0;
+                    int eurBankCounter = 0;
+                    int rubBankCounter = 0;
+                    int usdBankCrashCounter = 0; //temp
+                    int eurBankCrashCounter = 0; //temp
+                    int rubBankCrashCounter = 0; //temp
                     for (int i=0; i < banksOfUkraine.length(); i++) {
                         JSONObject bank = banksOfUkraine.getJSONObject(i);
                         if (bank.getInt(orgType) == 1) {
-                            banksCounter++;
                             JSONObject currenciesJson = bank.getJSONObject(currencies);
-                            JSONObject usdFinanceJson = currenciesJson.getJSONObject(usd);
-                            JSONObject eurFinanceJson = currenciesJson.getJSONObject(eur);
-                            JSONObject rubFinanceJson = currenciesJson.getJSONObject(rub);
-                            usdRateBuy += usdFinanceJson.getDouble(bid);
-                            usdRateSell += usdFinanceJson.getDouble(ask);
-                            eurRateBuy += eurFinanceJson.getDouble(bid);
-                            eurRateSell += eurFinanceJson.getDouble(ask);
-                            rubRateBuy += rubFinanceJson.getDouble(bid);
-                            rubRateSell += rubFinanceJson.getDouble(ask);
+                            try {
+                                JSONObject usdFinanceJson = currenciesJson.getJSONObject(usd);
+                                usdRateBuy += usdFinanceJson.getDouble(bid);
+                                usdRateSell += usdFinanceJson.getDouble(ask);
+                                usdBankCounter++;
+                            } catch (JSONException ex) {
+                                usdBankCrashCounter++;
+                            }
+                            try {
+                                JSONObject eurFinanceJson = currenciesJson.getJSONObject(eur);
+                                eurRateBuy += eurFinanceJson.getDouble(bid);
+                                eurRateSell += eurFinanceJson.getDouble(ask);
+                                eurBankCounter++;
+                            } catch (JSONException ex) {
+                                eurBankCrashCounter++;
+                            }
+                            try {
+                                JSONObject rubFinanceJson = currenciesJson.getJSONObject(rub);
+                                rubRateBuy += rubFinanceJson.getDouble(bid);
+                                rubRateSell += rubFinanceJson.getDouble(ask);
+                                rubBankCounter++;
+                            } catch (JSONException ex) {
+                                rubBankCrashCounter++;
+                            }
                         }
                     }
-                    if (banksCounter == 0) {
-                        banksCounter = 1; //in case of incorrect json
+                    if (usdBankCounter == 0) {
+                        usdBankCounter = 1; //in case of incorrect json
                     }
+                    if (eurBankCounter == 0) {
+                        eurBankCounter = 1; //in case of incorrect json
+                    }
+                    if (rubBankCounter == 0) {
+                        rubBankCounter = 1; //in case of incorrect json
+                    }
+                    Log.d(Constants.LOG_TAG, "USD bank crashes:" + usdBankCrashCounter); //temp
+                    Log.d(Constants.LOG_TAG, "EUR bank crashes:" + eurBankCrashCounter); //temp
+                    Log.d(Constants.LOG_TAG, "RUB bank crashes:" + rubBankCrashCounter); //temp
                     String jsonUpdateDate = financeWholeJson.getString(data);
                     addDoubleRateRow(Constants.FINANCE, Utility.getTimeFromUTCDate(jsonUpdateDate),
-                            usdRateBuy / banksCounter, usdRateSell / banksCounter,
-                            eurRateBuy / banksCounter, eurRateSell / banksCounter,
-                            rubRateBuy / banksCounter, rubRateSell / banksCounter);
+                            usdRateBuy / usdBankCounter, usdRateSell / usdBankCounter,
+                            eurRateBuy / eurBankCounter, eurRateSell / eurBankCounter,
+                            rubRateBuy / rubBankCounter, rubRateSell / rubBankCounter);
                     break;
             }
 

@@ -22,9 +22,9 @@ public class RateProvider extends ContentProvider {
 
     private static final String additionForSourceIdSelection = "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? ";
 
-    private static final String additionForSourceIdWithStartDateSelection =
-            "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
-                    RateBaseColumns.COLUMN_DATE + " >= ? ";
+//    private static final String additionForSourceIdWithStartDateSelection =
+//            "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
+//                    RateBaseColumns.COLUMN_DATE + " >= ? ";
 
     private static final String additionForSourceIdAndDaySelection =
                     "." + RateBaseColumns.COLUMN_SOURCE_ID + " = ? AND " +
@@ -32,19 +32,20 @@ public class RateProvider extends ContentProvider {
 
     private Cursor getRateBySource(Uri uri, String[] projection, String sortOrder) {
         int sourceId = RateContract.getSourceIdFromUri(uri);
-        long startDate = RateContract.getStartDateFromUri(uri);
+        boolean onlyLastDate = RateContract.withLastDateInUri(uri);
         String tableName = RateContract.getTableNameFromUri(uri);
 
         String[] selectionArgs;
         String selection;
+        String limit = null;
 
-        if (startDate == 0) {
+        if (onlyLastDate) {
+            limit = "1";
+//            selectionArgs = new String[]{String.valueOf(sourceId), Long.toString(startDate)};
+//            selection = tableName + additionForSourceIdWithStartDateSelection;
+        }
             selection = tableName + additionForSourceIdSelection;
             selectionArgs = new String[]{String.valueOf(sourceId)};
-        } else {
-            selectionArgs = new String[]{String.valueOf(sourceId), Long.toString(startDate)};
-            selection = tableName + additionForSourceIdWithStartDateSelection;
-        }
 
         return mOpenHelper.getReadableDatabase().query(
                 tableName,
@@ -53,7 +54,8 @@ public class RateProvider extends ContentProvider {
                 selectionArgs,
                 null,
                 null,
-                sortOrder
+                sortOrder,
+                limit
         );
     }
 

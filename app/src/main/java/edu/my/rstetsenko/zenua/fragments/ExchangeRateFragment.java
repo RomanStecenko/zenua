@@ -14,7 +14,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.ShareActionProvider;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,17 +29,18 @@ import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.FetchRateTask;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
+import edu.my.rstetsenko.zenua.data.RateBaseColumns;
 import edu.my.rstetsenko.zenua.data.RateContract;
 
 public class ExchangeRateFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
     private static final String OPEN_EXCHANGE_RATES_REQUEST = "http://openexchangerates.org/api/latest.json?app_id=60acbc550c654afd86eea4304cdec3f0";
     private static final String JSON_RATES_REQUEST= "http://jsonrates.com/get/?%20base=USD&apiKey=jr-878f7938dc3db294f030a675358a2ed9";
-    private static final String PRIVATE_NBU_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=3";
+//    private static final String PRIVATE_NBU_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=3";
     private static final String PRIVATE_CASH_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
-    private static final String PRIVATE_NON_CASH_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=11";
-    private static final String INTERBANK_REQUEST= "http://api.minfin.com.ua/mb/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //MINFIN api, not works
+//    private static final String PRIVATE_NON_CASH_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=11";
+//    private static final String INTERBANK_REQUEST= "http://api.minfin.com.ua/mb/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //MINFIN api, not works
     private static final String INTERBANK_BANKS_REQUEST= "http://api.minfin.com.ua/summary/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //banks info from MINFIN
-    private static final String CURRENCY_AUCTION_REQUEST= "http://api.minfin.com.ua/auction/info/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; // MINFIN Currency auction
+//    private static final String CURRENCY_AUCTION_REQUEST= "http://api.minfin.com.ua/auction/info/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; // MINFIN Currency auction
     private static final String FINANCE_REQUEST= "http://resources.finance.ua/ua/public/currency-cash.json";
 
     private static final String SHARE_TAG = " #ZenUA";
@@ -57,7 +57,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     private Button sourceButton;
     private int currentSource;
     private Uri uriToSource;
-    private Boolean isSingleRate = null;
     private String shareString;
 
     @Override
@@ -110,12 +109,10 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         super.onStart();
         switchSource(Utility.getPreferredSource());
         toggleLayout();
-        loadData();
     }
 
     private void toggleLayout() {
-        //TODO simplify select of correct table!
-        if (isSingleRate) {
+        if (Constants.singleRates.contains(currentSource)) {
             usdTextView.setVisibility(View.VISIBLE);
             eurTextView.setVisibility(View.VISIBLE);
             rubTextView.setVisibility(View.VISIBLE);
@@ -172,27 +169,22 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         currentSource = sourceNumber;
         switch (currentSource){
             case Constants.PRIVATE:
-                isSingleRate = false;
                 uriToSource = Uri.parse("https://privatbank.ua");
                 sourceButton.setText(getString(R.string.pref_private_label));
                 break;
             case Constants.MIN_FIN:
-                isSingleRate = false;
                 uriToSource = Uri.parse("http://www.minfin.com.ua/currency/");
                 sourceButton.setText(getString(R.string.minfin_label));
                 break;
             case Constants.JSON_RATES:
-                isSingleRate = true;
                 uriToSource = null;
                 sourceButton.setText(getString(R.string.pref_jsonrates_label));
                 break;
             case Constants.OPEN_EXCHANGE_RATES:
-                isSingleRate = true;
                 uriToSource = null;
                 sourceButton.setText(getString(R.string.pref_openexchangerates_label));
                 break;
             case Constants.FINANCE:
-                isSingleRate = false;
                 uriToSource = Uri.parse("http://finance.ua/ru/currency");
                 sourceButton.setText(getString(R.string.finance_label));
                 break;
@@ -284,27 +276,14 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         int sourceId = Utility.getPreferredSource();
-//        Uri uri;
-//        String[] projection;
-//        switch (sourceId) {
-//            case JSON_RATES:
-//            case OPEN_EXCHANGE_RATES:
-//                uri = RateContract.RateEntry.buildRateSourceIdWithDate(sourceId, updateDate);
-//                projection =  Utility.RATE_COLUMNS;
-//                break;
-//            default:
-//                uri = RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithDate(sourceId, updateDate);
-//                projection = Utility.DOUBLE_RATE_COLUMNS;
-//                break;
-//        }
-        //TODO simplify select of correct table!
-        long updateDate = Utility.getTimeFromDate(updateDateTextView.getText().toString());
-        Uri uri = isSingleRate ?
-                RateContract.RateEntry.buildRateSourceIdWithDate(sourceId, updateDate):
-                RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithDate(sourceId, updateDate);
+        Uri uri = Constants.singleRates.contains(sourceId) ?
+                RateContract.RateEntry.buildRateSourceIdWithLastDate(sourceId):
+                RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithLastDate(sourceId);
 
-        String[] projection = isSingleRate ?
+        String[] projection = Constants.singleRates.contains(sourceId) ?
                 Utility.RATE_COLUMNS : Utility.DOUBLE_RATE_COLUMNS;
+
+        String sortOrder = RateBaseColumns.COLUMN_DATE + " DESC";
 
         return new CursorLoader(
                 getActivity(),
@@ -312,7 +291,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                 projection,
                 null,
                 null,
-                null
+                sortOrder
         );
     }
 
@@ -322,9 +301,8 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             return;
         }
         setUpdateDate(Utility.formatDate(data.getLong(Utility.COL_DATE)));
-        if (isSingleRate == null) {
-            Log.e(Constants.LOG_TAG, "Error! Boolean isSingleRate == null! it seems onLoadFinished() starts before variable had initialize");
-        } else if (isSingleRate) {
+        int sourceId = data.getInt(Utility.COL_SOURCE_ID);
+        if (Constants.singleRates.contains(sourceId)) {
             setRate(
                     data.getDouble(Utility.COL_RATE_USD),
                     data.getDouble(Utility.COL_RATE_EUR),
@@ -341,7 +319,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             );
         }
 
-        switch (data.getInt(Utility.COL_SOURCE_ID)){
+        switch (sourceId){
             case Constants.PRIVATE:
                 setDescription(getString(R.string.private_description_cash));
                 break;
@@ -362,4 +340,9 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {}
+
+    public void onSourceChanged() {
+        loadData();
+        getLoaderManager().restartLoader(EXCHANGE_RATE_LOADER_ID, null, this);
+    }
 }

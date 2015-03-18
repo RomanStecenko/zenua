@@ -1,5 +1,9 @@
 package edu.my.rstetsenko.zenua;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Constants {
 
     private Constants() {}
@@ -12,4 +16,6 @@ public class Constants {
     public static final int OPEN_EXCHANGE_RATES = 3;
     public static final int FINANCE = 4;
 
+    public static final Set<Integer> singleRates = new HashSet<Integer>(Arrays.asList(new Integer[]{JSON_RATES, OPEN_EXCHANGE_RATES}));
+//    public static final Set<Integer> doubleRates = new HashSet<Integer>(Arrays.asList(new Integer[]{PRIVATE, MIN_FIN, FINANCE}));
 }

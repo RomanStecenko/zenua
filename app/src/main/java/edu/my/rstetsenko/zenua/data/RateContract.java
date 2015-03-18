@@ -29,9 +29,9 @@ public class RateContract {
             return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId)).build();
         }
 
-        public static Uri buildRateSourceIdWithStartDate(int sourceId, long startDate) {
+        public static Uri buildRateSourceIdWithLastDate(int sourceId) {
             return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId))
-                    .appendQueryParameter(COLUMN_DATE, Long.toString(startDate)).build();
+                    .appendQueryParameter(COLUMN_DATE, "true").build();
         }
 
         public static Uri buildRateSourceIdWithDate(int sourceId, long date) {
@@ -62,9 +62,9 @@ public class RateContract {
             return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId)).build();
         }
 
-        public static Uri buildDoubleRateSourceIdWithStartDate(int sourceId, long startDate) {
+        public static Uri buildDoubleRateSourceIdWithLastDate(int sourceId) {
             return CONTENT_URI.buildUpon().appendPath(String.valueOf(sourceId))
-                    .appendQueryParameter(COLUMN_DATE, Long.toString(startDate)).build();
+                    .appendQueryParameter(COLUMN_DATE, "true").build();
         }
 
         public static Uri buildDoubleRateSourceIdWithDate(int sourceId, long date) {
@@ -85,11 +85,8 @@ public class RateContract {
         return Long.parseLong(uri.getPathSegments().get(2));
     }
 
-    public static long getStartDateFromUri(Uri uri) {
-        String dateString = uri.getQueryParameter(RateBaseColumns.COLUMN_DATE);
-        if (null != dateString && dateString.length() > 0)
-            return Long.parseLong(dateString);
-        else
-            return 0;
+    public static boolean withLastDateInUri(Uri uri) {
+        String withLastDate = uri.getQueryParameter(RateBaseColumns.COLUMN_DATE);
+        return null != withLastDate && withLastDate.length() > 0 && Boolean.parseBoolean(withLastDate);
     }
 }

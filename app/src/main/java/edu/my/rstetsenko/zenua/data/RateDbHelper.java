@@ -7,7 +7,7 @@ import edu.my.rstetsenko.zenua.data.RateContract.RateEntry;
 import edu.my.rstetsenko.zenua.data.RateContract.DoubleRateEntry;
 
 public class RateDbHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "rate.db";
 
     public RateDbHelper(Context context) {
@@ -22,8 +22,13 @@ public class RateDbHelper extends SQLiteOpenHelper {
                 RateEntry.COLUMN_DATE + " INTEGER, " +
                 RateEntry.COLUMN_USD + " REAL NOT NULL, " +
                 RateEntry.COLUMN_EUR + " REAL NOT NULL, " +
-                RateEntry.COLUMN_RUB + " REAL NOT NULL " +
-                " );";
+                RateEntry.COLUMN_RUB + " REAL NOT NULL, " +
+
+                // To assure the application have just one rate entry per exact time
+                // per source, it's created a UNIQUE constraint with REPLACE strategy
+                // added in db ver #2
+                " UNIQUE (" + RateBaseColumns.COLUMN_DATE + ", " +
+                RateBaseColumns.COLUMN_SOURCE_ID + ") ON CONFLICT REPLACE);";
 
         final String SQL_CREATE_DOUBLE_RATE_TABLE = "CREATE TABLE " + DoubleRateEntry.TABLE_NAME + " (" +
                 DoubleRateEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -33,9 +38,14 @@ public class RateDbHelper extends SQLiteOpenHelper {
                 DoubleRateEntry.COLUMN_USD_SELL + " REAL NOT NULL, " +
                 DoubleRateEntry.COLUMN_EUR_BUY + " REAL NOT NULL, " +
                 DoubleRateEntry.COLUMN_EUR_SELL + " REAL NOT NULL, " +
-                DoubleRateEntry.COLUMN_RUB_BUY + " REAL NOT NULL " +
-                DoubleRateEntry.COLUMN_RUB_SELL + " REAL NOT NULL " +
-                " );";
+                DoubleRateEntry.COLUMN_RUB_BUY + " REAL NOT NULL, " +
+                DoubleRateEntry.COLUMN_RUB_SELL + " REAL NOT NULL, " +
+
+                // To assure the application have just one double rate entry per exact time
+                // per source, it's created a UNIQUE constraint with REPLACE strategy
+                // added in db ver #2
+                " UNIQUE (" + RateBaseColumns.COLUMN_DATE + ", " +
+                RateBaseColumns.COLUMN_SOURCE_ID + ") ON CONFLICT REPLACE);";
 
         db.execSQL(SQL_CREATE_RATE_TABLE);
         db.execSQL(SQL_CREATE_DOUBLE_RATE_TABLE);
