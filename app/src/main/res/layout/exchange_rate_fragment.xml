@@ -96,6 +96,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="15"
+                android:padding="5dp"
                 tools:text="25.5" />
 
             <TextView
@@ -144,6 +149,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="-1"
+                android:shadowDy="-1"
+                android:shadowRadius="20"
+                android:padding="5dp"
                 tools:text="35.5" />
 
             <TextView
@@ -192,6 +202,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="10"
+                android:padding="5dp"
                 tools:text="0.5" />
 
             <TextView

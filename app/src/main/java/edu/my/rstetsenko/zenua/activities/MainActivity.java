@@ -162,7 +162,7 @@ public class MainActivity extends ActionBarActivity {
 //            mp.reset();
 //            videoView.setVideoURI(getVideoUri());
             videoView.start();
-            LogMessage("onCompletion, videoView.start()");
+//            LogMessage("onCompletion, videoView.start()");
         }
     };
 
@@ -170,7 +170,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onPrepared(MediaPlayer mp) {
             videoView.start();
-            LogMessage("onPrepared, videoView.start()");
+//            LogMessage("onPrepared, videoView.start()");
         }
     };
 
