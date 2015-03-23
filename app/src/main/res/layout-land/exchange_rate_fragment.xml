@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -88,11 +89,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="0"
-                android:shadowDy="0"
-                android:shadowRadius="5"
-                android:padding="5dp"
+                style="@style/rateValueTextView"
                 tools:visibility="gone"
                 tools:text="25.5" />
 
@@ -114,9 +111,10 @@
                     android:id="@+id/usd_rate_buy"
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="center_vertical"
                     android:layout_height="0dp"
+                    android:gravity="center_vertical"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="24.3" />
 
                 <TextView
@@ -126,6 +124,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -144,11 +143,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="0"
-                android:shadowDy="0"
-                android:shadowRadius="10"
-                android:padding="5dp"
+                style="@style/rateValueTextView"
                 tools:visibility="gone"
                 tools:text="35.5" />
 
@@ -170,9 +165,10 @@
                     android:id="@+id/eur_rate_buy"
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="center_vertical"
                     android:layout_height="0dp"
+                    android:gravity="center_vertical"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="24.3" />
 
                 <TextView
@@ -182,6 +178,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -200,11 +197,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="0"
-                android:shadowDy="0"
-                android:shadowRadius="15"
-                android:padding="5dp"
+                style="@style/rateValueTextView"
                 tools:visibility="gone"
                 tools:text="0.5" />
 
@@ -226,9 +219,10 @@
                     android:id="@+id/rub_rate_buy"
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="center_vertical"
                     android:layout_height="0dp"
+                    android:gravity="center_vertical"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="24.3" />
 
                 <TextView
@@ -238,6 +232,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="26.7" />
 
             </LinearLayout>
