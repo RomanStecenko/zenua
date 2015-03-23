@@ -101,6 +101,7 @@
                 android:shadowDy="1"
                 android:shadowRadius="15"
                 android:padding="5dp"
+                android:text="26.78"
                 tools:text="25.5" />
 
             <TextView
@@ -154,6 +155,7 @@
                 android:shadowDy="-1"
                 android:shadowRadius="20"
                 android:padding="5dp"
+                android:text="31.4"
                 tools:text="35.5" />
 
             <TextView
@@ -207,6 +209,7 @@
                 android:shadowDy="0"
                 android:shadowRadius="10"
                 android:padding="5dp"
+                android:text="0.59"
                 tools:text="0.5" />
 
             <TextView
