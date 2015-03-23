@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.FetchRateTask;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
+import edu.my.rstetsenko.zenua.activities.MainActivity;
 import edu.my.rstetsenko.zenua.data.RateBaseColumns;
 import edu.my.rstetsenko.zenua.data.RateContract;
 
@@ -89,6 +91,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         buySellRUB = (LinearLayout) rootView.findViewById(R.id.buy_sell_rub);
         rubRateBuy = (TextView) buySellRUB.findViewById(R.id.rub_rate_buy);
         rubRateSell = (TextView) buySellRUB.findViewById(R.id.rub_rate_sell);
+        rootView.setOnClickListener(onClickListener);
         return rootView;
     }
 
@@ -108,27 +111,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onStart() {
         super.onStart();
         switchSource(Utility.getPreferredSource());
-        toggleLayout();
-    }
-
-    private void toggleLayout() {
-        if (Constants.singleRates.contains(currentSource)) {
-            usdTextView.setVisibility(View.VISIBLE);
-            eurTextView.setVisibility(View.VISIBLE);
-            rubTextView.setVisibility(View.VISIBLE);
-            buySellUSD.setVisibility(View.GONE);
-            buySellEUR.setVisibility(View.GONE);
-            buySellRUB.setVisibility(View.GONE);
-            buySellTitles.setVisibility(View.GONE);
-        } else {
-            usdTextView.setVisibility(View.GONE);
-            eurTextView.setVisibility(View.GONE);
-            rubTextView.setVisibility(View.GONE);
-            buySellUSD.setVisibility(View.VISIBLE);
-            buySellEUR.setVisibility(View.VISIBLE);
-            buySellRUB.setVisibility(View.VISIBLE);
-            buySellTitles.setVisibility(View.VISIBLE);
-        }
+        toggleFullScreen();
     }
 
     @Override
@@ -161,13 +144,17 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                         startActivity(goToLink);
                     }
                     break;
+                default:
+                    Utility.toggleFullScreen();
+                    toggleFullScreen();
+                    break;
             }
         }
     };
 
     private void switchSource(int sourceNumber) {
         currentSource = sourceNumber;
-        switch (currentSource){
+        switch (currentSource) {
             case Constants.PRIVATE:
                 uriToSource = Uri.parse("https://privatbank.ua");
                 sourceButton.setText(getString(R.string.pref_private_label));
@@ -188,6 +175,39 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                 uriToSource = Uri.parse("http://finance.ua/ru/currency");
                 sourceButton.setText(getString(R.string.finance_label));
                 break;
+        }
+        toggleLayout();
+    }
+
+    private void toggleLayout() {
+        if (Constants.singleRates.contains(currentSource)) {
+            usdTextView.setVisibility(View.VISIBLE);
+            eurTextView.setVisibility(View.VISIBLE);
+            rubTextView.setVisibility(View.VISIBLE);
+            buySellUSD.setVisibility(View.GONE);
+            buySellEUR.setVisibility(View.GONE);
+            buySellRUB.setVisibility(View.GONE);
+            buySellTitles.setVisibility(View.GONE);
+        } else {
+            usdTextView.setVisibility(View.GONE);
+            eurTextView.setVisibility(View.GONE);
+            rubTextView.setVisibility(View.GONE);
+            buySellUSD.setVisibility(View.VISIBLE);
+            buySellEUR.setVisibility(View.VISIBLE);
+            buySellRUB.setVisibility(View.VISIBLE);
+            buySellTitles.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void toggleFullScreen() {
+        if (Utility.isFullScreen()) {
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            ((MainActivity)getActivity()).getSupportActionBar().hide();
+        } else {
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            ((MainActivity)getActivity()).getSupportActionBar().show();
         }
     }
 

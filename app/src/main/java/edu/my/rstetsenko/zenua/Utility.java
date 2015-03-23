@@ -14,6 +14,7 @@ import edu.my.rstetsenko.zenua.data.RateContract;
 
 public class Utility {
     private static final String KEY_SOUND = "key_sound";
+    private static final String KEY_FULL_SCREEN = "key_full_screen";
 
     public static final String[] RATE_COLUMNS = {
             RateContract.RateEntry.TABLE_NAME + "." + RateBaseColumns._ID,
@@ -72,6 +73,14 @@ public class Utility {
 
     public static boolean isSoundOn() {
         return mPrefs.getBoolean(KEY_SOUND, true);
+    }
+
+    public static void toggleFullScreen() {
+        updatePref(KEY_FULL_SCREEN, !isFullScreen());
+    }
+
+    public static boolean isFullScreen() {
+        return mPrefs.getBoolean(KEY_FULL_SCREEN, false);
     }
 
     public static int getPreferredSource() {
