@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
                 android:text="@string/buy"
-                android:textStyle="bold"/>
+                style="@style/rateValueTextView"/>
 
             <TextView
                 android:layout_width="0dp"
@@ -53,7 +53,7 @@
                 android:gravity="center_horizontal"
                 android:textSize="20sp"
                 android:text="@string/sell"
-                android:textStyle="bold"/>
+                style="@style/rateValueTextView"/>
 
         </LinearLayout>
 
@@ -75,9 +75,10 @@
                     android:id="@+id/usd_rate_buy"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:gravity="center_horizontal"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="24.3" />
 
                 <TextView
@@ -87,6 +88,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -96,12 +98,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="15"
-                android:padding="5dp"
-                android:text="26.78"
+                style="@style/rateValueTextView"
                 tools:text="25.5" />
 
             <TextView
@@ -129,9 +126,10 @@
                     android:id="@+id/eur_rate_buy"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:gravity="center_horizontal"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="24.3" />
 
                 <TextView
@@ -141,6 +139,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -150,12 +149,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="-1"
-                android:shadowDy="-1"
-                android:shadowRadius="20"
-                android:padding="5dp"
-                android:text="31.4"
+                style="@style/rateValueTextView"
                 tools:text="35.5" />
 
             <TextView
@@ -183,9 +177,10 @@
                     android:id="@+id/rub_rate_buy"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:gravity="center_horizontal"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="24.3" />
 
                 <TextView
@@ -195,6 +190,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
+                    style="@style/rateValueTextView"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -204,12 +200,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="0"
-                android:shadowDy="0"
-                android:shadowRadius="10"
-                android:padding="5dp"
-                android:text="0.59"
+                style="@style/rateValueTextView"
                 tools:text="0.5" />
 
             <TextView

@@ -2,9 +2,7 @@ package edu.my.rstetsenko.zenua.fragments;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.database.Cursor;
-import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -16,25 +14,23 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.ShareActionProvider;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.util.concurrent.ConcurrentNavigableMap;
-
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.FetchRateTask;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
+import edu.my.rstetsenko.zenua.activities.MainActivity;
 import edu.my.rstetsenko.zenua.data.RateBaseColumns;
 import edu.my.rstetsenko.zenua.data.RateContract;
 
@@ -64,13 +60,11 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     private int currentSource;
     private Uri uriToSource;
     private String shareString;
-    private String[] fonts;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        getFontsNames();
     }
 
     @Override
@@ -97,6 +91,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         buySellRUB = (LinearLayout) rootView.findViewById(R.id.buy_sell_rub);
         rubRateBuy = (TextView) buySellRUB.findViewById(R.id.rub_rate_buy);
         rubRateSell = (TextView) buySellRUB.findViewById(R.id.rub_rate_sell);
+        rootView.setOnClickListener(onClickListener);
         return rootView;
     }
 
@@ -116,27 +111,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onStart() {
         super.onStart();
         switchSource(Utility.getPreferredSource());
-        toggleLayout();
-    }
-
-    private void toggleLayout() {
-        if (Constants.singleRates.contains(currentSource)) {
-            usdTextView.setVisibility(View.VISIBLE);
-            eurTextView.setVisibility(View.VISIBLE);
-            rubTextView.setVisibility(View.VISIBLE);
-            buySellUSD.setVisibility(View.GONE);
-            buySellEUR.setVisibility(View.GONE);
-            buySellRUB.setVisibility(View.GONE);
-            buySellTitles.setVisibility(View.GONE);
-        } else {
-            usdTextView.setVisibility(View.GONE);
-            eurTextView.setVisibility(View.GONE);
-            rubTextView.setVisibility(View.GONE);
-            buySellUSD.setVisibility(View.VISIBLE);
-            buySellEUR.setVisibility(View.VISIBLE);
-            buySellRUB.setVisibility(View.VISIBLE);
-            buySellTitles.setVisibility(View.VISIBLE);
-        }
+        toggleFullScreen();
     }
 
     @Override
@@ -164,11 +139,14 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.link_for_resource:
-                    setNextFont();
                     if (uriToSource != null) {
                         Intent goToLink = new Intent(Intent.ACTION_VIEW, uriToSource);
                         startActivity(goToLink);
                     }
+                    break;
+                default:
+                    Utility.toggleFullScreen();
+                    toggleFullScreen();
                     break;
             }
         }
@@ -176,7 +154,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
 
     private void switchSource(int sourceNumber) {
         currentSource = sourceNumber;
-        switch (currentSource){
+        switch (currentSource) {
             case Constants.PRIVATE:
                 uriToSource = Uri.parse("https://privatbank.ua");
                 sourceButton.setText(getString(R.string.pref_private_label));
@@ -197,6 +175,39 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                 uriToSource = Uri.parse("http://finance.ua/ru/currency");
                 sourceButton.setText(getString(R.string.finance_label));
                 break;
+        }
+        toggleLayout();
+    }
+
+    private void toggleLayout() {
+        if (Constants.singleRates.contains(currentSource)) {
+            usdTextView.setVisibility(View.VISIBLE);
+            eurTextView.setVisibility(View.VISIBLE);
+            rubTextView.setVisibility(View.VISIBLE);
+            buySellUSD.setVisibility(View.GONE);
+            buySellEUR.setVisibility(View.GONE);
+            buySellRUB.setVisibility(View.GONE);
+            buySellTitles.setVisibility(View.GONE);
+        } else {
+            usdTextView.setVisibility(View.GONE);
+            eurTextView.setVisibility(View.GONE);
+            rubTextView.setVisibility(View.GONE);
+            buySellUSD.setVisibility(View.VISIBLE);
+            buySellEUR.setVisibility(View.VISIBLE);
+            buySellRUB.setVisibility(View.VISIBLE);
+            buySellTitles.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void toggleFullScreen() {
+        if (Utility.isFullScreen()) {
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            ((MainActivity)getActivity()).getSupportActionBar().hide();
+        } else {
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            ((MainActivity)getActivity()).getSupportActionBar().show();
         }
     }
 
@@ -353,31 +364,5 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onSourceChanged() {
         loadData();
         getLoaderManager().restartLoader(EXCHANGE_RATE_LOADER_ID, null, this);
-    }
-
-    private void getFontsNames(){
-        AssetManager assetManager = getActivity().getAssets();
-        try {
-            fonts = assetManager.list("fonts");
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(Constants.LOG_TAG, "assetManager: ", e);
-        }
-    }
-
-    private int fontPosition = 1;
-
-    private void setNextFont() {
-        if (fontPosition > fonts.length) {
-            fontPosition = 1;
-        }
-        Typeface face = Typeface.createFromAsset(getActivity().getAssets(), "fonts/" + fonts[fontPosition-1]);
-        Log.d(Constants.LOG_TAG, "FONT "+ (fontPosition -1) + " name: "+ fonts[fontPosition-1]);
-        rubTextView.setTypeface(face);
-        eurTextView.setTypeface(face);
-        usdTextView.setTypeface(face);
-        fontPosition++;
-
-        //android:fontFamily="sans-serif-light"
     }
 }
