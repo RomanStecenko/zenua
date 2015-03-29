@@ -11,6 +11,7 @@
         android:paddingTop="8dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
+        style="@style/TextView.Description"
         tools:text="last update date" />
 
     <TextView
@@ -20,6 +21,7 @@
         android:paddingTop="8dp"
         android:layout_below="@id/updated"
         android:layout_centerHorizontal="true"
+        style="@style/TextView.Description"
         tools:text="average rate of banks" />
 
     <LinearLayout
@@ -44,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
                 android:text="@string/buy"
-                style="@style/rateValueTextView"/>
+                style="@style/TextView.Description"/>
 
             <TextView
                 android:layout_width="0dp"
@@ -53,7 +55,7 @@
                 android:gravity="center_horizontal"
                 android:textSize="20sp"
                 android:text="@string/sell"
-                style="@style/rateValueTextView"/>
+                style="@style/TextView.Description"/>
 
         </LinearLayout>
 
@@ -78,7 +80,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
                 <TextView
@@ -88,7 +90,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -98,12 +100,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                style="@style/rateValueTextView"
+                style="@style/TextView.RateValue"
                 tools:text="25.5" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                style="@style/TextView.Description"
                 android:text="@string/usd" />
 
         </LinearLayout>
@@ -129,7 +132,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
                 <TextView
@@ -139,7 +142,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -149,12 +152,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                style="@style/rateValueTextView"
+                style="@style/TextView.RateValue"
                 tools:text="35.5" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                style="@style/TextView.Description"
                 android:text="@string/eur" />
 
         </LinearLayout>
@@ -180,7 +184,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
                 <TextView
@@ -190,7 +194,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -200,12 +204,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                style="@style/rateValueTextView"
+                style="@style/TextView.RateValue"
                 tools:text="0.5" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                style="@style/TextView.Description"
                 android:text="@string/rub" />
 
         </LinearLayout>

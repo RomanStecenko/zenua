@@ -242,6 +242,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         shareIntent.setType("text/plain");
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 //        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        //TODO add app icon into share intent when it will be prepared
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareString + SHARE_TAG);
         return shareIntent;
     }
