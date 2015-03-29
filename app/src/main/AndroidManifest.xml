@@ -39,9 +39,6 @@
             android:exported="true"
             android:syncable="true" />
 
-        <!--<service android:name=".service.MyService"/>-->
-        <!--<receiver android:name=".service.MyService$AlarmReceiver" android:enabled="true"/>-->
-
         <service android:name=".sync.ZenUaAuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
