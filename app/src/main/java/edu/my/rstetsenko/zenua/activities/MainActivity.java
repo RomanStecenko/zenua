@@ -9,37 +9,43 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.VideoView;
 
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
 import edu.my.rstetsenko.zenua.fragments.ExchangeRateFragment;
+import edu.my.rstetsenko.zenua.sync.ZenUaSyncAdapter;
 
 
 public class MainActivity extends ActionBarActivity {
-//    private static final String VIDEO_POSITION = "video_position";
-//    private static final String PLAYER_STATE = "player_state";
     private final String RATE_FRAGMENT_TAG = "RFTAG";
 
     private VideoView videoView;
     private MenuItem soundItem;
-//    private int videoPosition = 0;
     private MediaPlayer mediaPlayer;
     private boolean isPlayerPrepared = false;
     private int mSourceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mSourceId = Utility.getPreferredSource();
         super.onCreate(savedInstanceState);
+        WindowManager.LayoutParams attributes = getWindow().getAttributes();
+        attributes.flags |= WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+        getWindow().setAttributes(attributes);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        mSourceId = Utility.getPreferredSource();
         setContentView(R.layout.activity_main);
 
 
-        videoView = (VideoView)findViewById(R.id.video_view);
+        videoView = (VideoView) findViewById(R.id.video_view);
         videoView.setVideoURI(getVideoUri());
         videoView.setOnPreparedListener(preparedListener);
-        videoView.setOnCompletionListener(onCompletionListener);
+//        videoView.setOnCompletionListener(onCompletionListener);
+        videoView.setOnErrorListener(onErrorListener);
         LogMessage("onCreate");//, videoView setVideoURI, listeners");
         mediaPlayer = MediaPlayer.create(this, R.raw.wawe49s);
         isPlayerPrepared = false;
@@ -49,24 +55,27 @@ public class MainActivity extends ActionBarActivity {
                 isPlayerPrepared = true;
                 if (Utility.isSoundOn()) {
                     mediaPlayer.start();
+                    LogMessage("Start mediaPlayer OnPreparedListener");
                 }
+                mp.setLooping(true);
             }
         });
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                isPlayerPrepared = true;
-                if (Utility.isSoundOn()) {
-                    mediaPlayer.start();
-                }
-            }
-        });
+//        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//            @Override
+//            public void onCompletion(MediaPlayer mp) {
+//                isPlayerPrepared = true;
+//                if (Utility.isSoundOn()) {
+//                    mediaPlayer.start();
+//                }
+//            }
+//        });
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new ExchangeRateFragment(), RATE_FRAGMENT_TAG)
                     .commit();
         }
+        ZenUaSyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override
@@ -74,6 +83,7 @@ public class MainActivity extends ActionBarActivity {
         super.onStart();
         if (Utility.isSoundOn() && isPlayerPrepared && !mediaPlayer.isPlaying()) {
             mediaPlayer.start();
+            LogMessage("Start mediaPlayer onStart");
         }
 //        videoView.resume();
         LogMessage("onStart");//, videoView.resume()");
@@ -93,6 +103,7 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         if (Utility.isSoundOn() && isPlayerPrepared && !mediaPlayer.isPlaying()) {
             mediaPlayer.start();
+            LogMessage("Start mediaPlayer onResume");
         }
         int sourceId = Utility.getPreferredSource();
         if (sourceId != mSourceId) {
@@ -121,14 +132,14 @@ public class MainActivity extends ActionBarActivity {
         LogMessage("onPause");//, videoView.getCurrentPosition(), videoPosition = " + videoPosition);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//        super.onSaveInstanceState(savedInstanceState);
 //        savedInstanceState.putInt(VIDEO_POSITION, videoPosition);
 //        savedInstanceState.putBoolean(PLAYER_STATE, isPlayerPrepared);
-        LogMessage("onSaveInstanceState");//, videoView.pause(), PUT videoPosition = "+ videoPosition + " current pos:" + videoView.getCurrentPosition());
+//        LogMessage("onSaveInstanceState");//, videoView.pause(), PUT videoPosition = "+ videoPosition + " current pos:" + videoView.getCurrentPosition());
 //        videoView.pause();
-    }
+//    }
 
     @Override
     protected void onStop() {
@@ -156,21 +167,33 @@ public class MainActivity extends ActionBarActivity {
         LogMessage("onDestroy");
     }
 
-    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
-        @Override
-        public void onCompletion(MediaPlayer mp) {
+//    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
+//        @Override
+//        public void onCompletion(MediaPlayer mp) {
 //            mp.reset();
 //            videoView.setVideoURI(getVideoUri());
-            videoView.start();
+//            videoView.start();
 //            LogMessage("onCompletion, videoView.start()");
-        }
-    };
+//        }
+//    };
 
     private MediaPlayer.OnPreparedListener preparedListener = new MediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared(MediaPlayer mp) {
             videoView.start();
-//            LogMessage("onPrepared, videoView.start()");
+            mp.setLooping(true);
+            LogMessage("Start videoView onPrepared");
+        }
+    };
+
+    private MediaPlayer.OnErrorListener onErrorListener = new MediaPlayer.OnErrorListener() {
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            LogMessage("MediaPlayer.OnErrorListener, what:" + what + ", extra:" + extra);
+            videoView.setVisibility(View.INVISIBLE);
+            videoView.suspend();
+            findViewById(R.id.container).setBackgroundResource(R.drawable.sea5);
+            return true;
         }
     };
 
@@ -185,6 +208,7 @@ public class MainActivity extends ActionBarActivity {
                 Utility.toggleSound();
                 if (Utility.isSoundOn() && isPlayerPrepared && !mediaPlayer.isPlaying()) {
                     mediaPlayer.start();
+                    LogMessage("Start mediaPlayer onOptionsItemSelected sound");
                 }
                 if (!Utility.isSoundOn() && mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();

@@ -15,6 +15,8 @@ import edu.my.rstetsenko.zenua.data.RateContract;
 public class Utility {
     private static final String KEY_SOUND = "key_sound";
     private static final String KEY_FULL_SCREEN = "key_full_screen";
+    private static final String KEY_LAST_NOTIFICATION = "key_last_notification";
+//    private static final String KEY_NOTIFICATIONS = "key_notifications";
 
     public static final String[] RATE_COLUMNS = {
             RateContract.RateEntry.TABLE_NAME + "." + RateBaseColumns._ID,
@@ -67,6 +69,12 @@ public class Utility {
         edit.apply();
     }
 
+    private static void updatePref(String key, long value) {
+        SharedPreferences.Editor edit = mPrefs.edit();
+        edit.putLong(key, value);
+        edit.apply();
+    }
+
     public static void toggleSound() {
         updatePref(KEY_SOUND, !isSoundOn());
     }
@@ -75,12 +83,33 @@ public class Utility {
         return mPrefs.getBoolean(KEY_SOUND, true);
     }
 
-    public static void toggleFullScreen() {
+//    public static void toggleNotifications() {
+//        updatePref(KEY_NOTIFICATIONS, !isNotificationsOn());
+//    }
+//
+//    public static boolean isNotificationsOn() {
+//        return mPrefs.getBoolean(KEY_NOTIFICATIONS, true);
+//    }
+
+    public static boolean isNotificationsOn() {
+        return mPrefs.getBoolean(context.getString(R.string.pref_enable_notifications_key),
+                Boolean.parseBoolean(context.getString(R.string.pref_enable_notifications_default)));
+    }
+
+    public static void toggleActionBarPreference() {
         updatePref(KEY_FULL_SCREEN, !isFullScreen());
     }
 
     public static boolean isFullScreen() {
         return mPrefs.getBoolean(KEY_FULL_SCREEN, false);
+    }
+
+    public static void setLastNotificationTimestamp(long timestamp) {
+        updatePref(KEY_LAST_NOTIFICATION, timestamp);
+    }
+
+    public static long getLastNotificationTimestamp() {
+        return mPrefs.getLong(KEY_LAST_NOTIFICATION, 0);
     }
 
     public static int getPreferredSource() {
@@ -100,21 +129,66 @@ public class Utility {
         return date.getTime();
     }
 
-    public static long getTimeFromDate(String Date) {
-        Date date;
-        try {
-            date = DateFormat.getDateTimeInstance().parse(Date);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return 0;
-        }
-        return date.getTime();
-    }
-
-
+//    public static long getTimeFromDate(String Date) {
+//        Date date;
+//        try {
+//            date = DateFormat.getDateTimeInstance().parse(Date);
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//            return 0;
+//        }
+//        return date.getTime();
+//    }
 
     public static String formatDate(long dateInMillis) {
         Date date = new Date(dateInMillis);
         return DateFormat.getDateTimeInstance().format(date);
+    }
+
+    public static String getDescription(int sourceId) {
+        switch (sourceId){
+            case Constants.PRIVATE:
+                return context.getString(R.string.private_description_cash);
+            case Constants.MIN_FIN:
+            case Constants.JSON_RATES:
+            case Constants.OPEN_EXCHANGE_RATES:
+                return "";
+            case Constants.FINANCE:
+                return context.getString(R.string.finance_description_average);
+            default:
+                return "";
+        }
+    }
+
+    public static String getSourceName(int sourceId) {
+        switch (sourceId){
+            case Constants.PRIVATE:
+                return context.getString(R.string.pref_private_label);
+            case Constants.MIN_FIN:
+                return context.getString(R.string.minfin_label);
+            case Constants.JSON_RATES:
+                return context.getString(R.string.pref_jsonrates_label);
+            case Constants.OPEN_EXCHANGE_RATES:
+                return context.getString(R.string.pref_openexchangerates_label);
+            case Constants.FINANCE:
+                return context.getString(R.string.finance_label);
+            default:
+                return "";
+        }
+    }
+
+    public static String prepareDoubleRateDescriptionString(double usdBuy, double usdSell, double eurBuy, double eurSell, double rubBuy, double rubSell) {
+        return String.format("USD: %s %6.2f %s %6.2f%nEUR: %s %6.2f %s %6.2f%nRUB: %s %6.2f %s %6.2f",
+                context.getString(R.string.buy), usdBuy,
+                context.getString(R.string.sell), usdSell,
+                context.getString(R.string.buy), eurBuy,
+                context.getString(R.string.sell), eurSell,
+                context.getString(R.string.buy), rubBuy,
+                context.getString(R.string.sell), rubSell
+        );
+    }
+
+    public static String prepareRateDescriptionString(double usd, double eur, double rub) {
+        return String.format("USD: %.2f%nEUR: %.2f%nRUB: %.2f", usd, eur, rub);
     }
 }
