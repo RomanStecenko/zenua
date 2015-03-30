@@ -25,6 +25,7 @@ import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
 import edu.my.rstetsenko.zenua.activities.MainActivity;
+import edu.my.rstetsenko.zenua.activities.RateProgressActivity;
 import edu.my.rstetsenko.zenua.data.RateBaseColumns;
 import edu.my.rstetsenko.zenua.data.RateContract;
 import edu.my.rstetsenko.zenua.sync.ZenUaSyncAdapter;
@@ -119,10 +120,11 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.link_for_resource:
-                    if (uriToSource != null) {
-                        Intent goToLink = new Intent(Intent.ACTION_VIEW, uriToSource);
-                        startActivity(goToLink);
-                    }
+//                    if (uriToSource != null) {
+//                        Intent goToLink = new Intent(Intent.ACTION_VIEW, uriToSource);
+//                        startActivity(goToLink);
+//                    }
+                    startActivity(new Intent(getActivity(), RateProgressActivity.class));
                     break;
                 default:
                     Utility.toggleActionBarPreference();
@@ -150,7 +152,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                 uriToSource = Uri.parse("http://finance.ua/ru/currency");
                 break;
         }
-        sourceButton.setText(Utility.getSourceName(sourceNumber));
+        sourceButton.setText(String.format("%s %s",getString(R.string.chart_of), Utility.getSourceName(sourceNumber)));
         toggleLayout(sourceNumber);
     }
 

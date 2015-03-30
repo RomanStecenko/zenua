@@ -129,6 +129,12 @@ public class Utility {
         return date.getTime();
     }
 
+    public static String getDayAndMonth(long dateInMillis) {
+        Date date = new Date(dateInMillis);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM.dd");
+        return dateFormat.format(date);
+    }
+
 //    public static long getTimeFromDate(String Date) {
 //        Date date;
 //        try {

@@ -57,7 +57,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final int SYNC_INTERVAL = 60 * 180;
     private static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
 
-    private static final long DAY_IN_MILLIS = 1000;//1000 * 60 * 60 * 24;
+    private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int RATE_NOTIFICATION_ID = 3764;
 
     public ZenUaSyncAdapter(Context context, boolean autoInitialize) {
