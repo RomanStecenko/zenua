@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_horizontal"
+            style="@style/TextView.Description"
             tools:text="last update date" />
 
         <TextView
@@ -26,6 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_horizontal"
+            style="@style/TextView.Description"
             tools:text="average rate of banks" />
 
     </LinearLayout>
@@ -42,7 +44,8 @@
             android:id="@+id/buy_sell_titles"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:paddingLeft="8dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="8dp"
             android:visibility="gone"
             android:orientation="vertical"
             tools:visibility="visible">
@@ -52,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
                 android:text="@string/buy"
-                android:textStyle="bold"
+                style="@style/TextView.Description"
                 android:visibility="invisible"/>
 
             <TextView
@@ -62,7 +65,7 @@
                 android:gravity="center_vertical"
                 android:textSize="20sp"
                 android:text="@string/buy"
-                android:textStyle="bold"/>
+                style="@style/TextView.Description"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -71,7 +74,7 @@
                 android:gravity="center_vertical"
                 android:textSize="20sp"
                 android:text="@string/sell"
-                android:textStyle="bold"/>
+                style="@style/TextView.Description"/>
 
         </LinearLayout>
 
@@ -88,7 +91,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                style="@style/rateValueTextView"
+                style="@style/TextView.RateValue"
                 tools:visibility="gone"
                 tools:text="25.5" />
 
@@ -96,6 +99,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"
+                style="@style/TextView.Description"
                 android:text="@string/usd" />
 
             <LinearLayout
@@ -113,7 +117,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
                 <TextView
@@ -123,7 +127,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -142,7 +146,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                style="@style/rateValueTextView"
+                style="@style/TextView.RateValue"
                 tools:visibility="gone"
                 tools:text="35.5" />
 
@@ -150,6 +154,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"
+                style="@style/TextView.Description"
                 android:text="@string/eur" />
 
             <LinearLayout
@@ -167,7 +172,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
                 <TextView
@@ -177,7 +182,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
             </LinearLayout>
@@ -196,7 +201,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="50sp"
-                style="@style/rateValueTextView"
+                style="@style/TextView.RateValue"
                 tools:visibility="gone"
                 tools:text="0.5" />
 
@@ -204,6 +209,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"
+                style="@style/TextView.Description"
                 android:text="@string/rub" />
 
             <LinearLayout
@@ -221,7 +227,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
                 <TextView
@@ -231,7 +237,7 @@
                     android:layout_height="0dp"
                     android:gravity="center_vertical"
                     android:textSize="50sp"
-                    style="@style/rateValueTextView"
+                    style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
             </LinearLayout>

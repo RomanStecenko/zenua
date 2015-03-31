@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
 
     <application
         android:name=".ZenUAApp"
@@ -14,6 +17,7 @@
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/app_name" >
+
             <!-- android:configChanges="orientation|keyboardHidden|screenSize" -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +28,8 @@
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/settings"
-            android:parentActivityName=".activities.MainActivity" >
+            android:parentActivityName=".activities.MainActivity"
+            android:theme="@style/SettingsTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MainActivity" />
@@ -32,10 +37,40 @@
 
         <provider
             android:name=".data.RateProvider"
-            android:authorities="edu.my.rstetsenko.zenua"
+            android:authorities="@string/content_authority"
             android:exported="true"
-            android:enabled="true" />
+            android:syncable="true" />
 
+        <service android:name=".sync.ZenUaAuthenticatorService" >
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+        <service
+            android:name=".sync.ZenUaSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
+
+        <activity
+            android:name=".activities.RateProgressActivity"
+            android:label="@string/title_activity_rate_progress"
+            android:parentActivityName=".activities.MainActivity"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
