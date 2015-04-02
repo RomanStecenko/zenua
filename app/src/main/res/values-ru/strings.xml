@@ -1,0 +1,19 @@
+<resources>
+    <string name="settings">Настройки</string>
+    <string name="pref_private_label">ПриватБанк</string>
+    <string name="pref_minfin_label">Минфин</string>
+    <string name="pref_source_label">Ресурс</string>
+    <string name="buy">Покупка</string>
+    <string name="sell">Продажа</string>
+    <string name="private_description_cash">Наличный курс (в отделениях)</string>
+    <string name="finance_description_average">Средний курс по банкам</string>
+    <string name="sound_on">Звук включен</string>
+    <string name="sound_off">Звук выключен</string>
+    <string name="share">Поделиться</string>
+    <string name="pref_enable_notifications_label">Уведомления курса валют</string>
+    <string name="pref_enable_notifications_true">Включено</string>
+    <string name="pref_enable_notifications_false">Выключено</string>
+    <string name="check_internet_connection">Проверьте подключение к Интернету</string>
+    <string name="title_activity_rate_progress">Графики курсов</string>
+    <string name="chart_of">График курса&#160;</string>
+</resources>
