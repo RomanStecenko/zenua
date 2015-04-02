@@ -41,69 +41,21 @@ public class RateProgressActivity extends ActionBarActivity implements LoaderMan
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rate_progress);
+        //TODO clean code; optimization; move description below chart; legend in two lines.
         int sourceId = Utility.getPreferredSource();
         String description = Utility.getSourceName(sourceId);
         mChart = (LineChart) findViewById(R.id.chart);
-//        mChart.setBackgroundColor(Color.WHITE);
         mChart.setDescription(description);
         mChart.setNoDataTextDescription("Need Internet connection to sync with source");
-//        mChart.setDrawGridBackground(true);
-//        mChart.setGridBackgroundColor(Color.BLUE);
-//        mChart.setDrawBorders(false);
-//        mChart.setTouchEnabled(true);
-//        mChart.setDragEnabled(true);
-//        mChart.setScaleEnabled(true);
-//        mChart.setPinchZoom(true);
-//        mChart.setHighlightEnabled(true);
-//        mChart.setValueTextColor(Color.WHITE);
-//        mChart.setDrawUnitsInChart(true);
-//        mChart.setStartAtZero(false);
-//        mChart.setDrawYValues(false);
-//        mChart.setDrawBorder(false);
-//        mChart.setBorderPositions(new BarLineChartBase.BorderPosition[]{
-//                BarLineChartBase.BorderPosition.BOTTOM
-//        });
-//        mChart.setDrawVerticalGrid(false);
-//        mChart.setDrawHorizontalGrid(true);
-//        mChart.setDrawYValues(true);
-//        mChart.setValueTextColor(Color.BLACK);
         mChart.setDrawGridBackground(false);
         mChart.setHighlightEnabled(true);
         mChart.setTouchEnabled(true);
         mChart.setDragEnabled(true);
         mChart.setScaleEnabled(true);
         mChart.setPinchZoom(false);
-//
-//        Legend l = mChart.getLegend();
-//        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
         getSupportLoaderManager().initLoader(RATE_PROGRESS_LOADER_ID, null, this);
     }
 
-//    private void setData(final List<HistoryItem> history) {
-//        ArrayList<String> xVals = new ArrayList<>();
-//        ArrayList<Entry> yVals = new ArrayList<>();
-//
-//        for (int i = 0; i < history.size(); i++) {
-//            HistoryItem item = history.get(i);
-//            xVals.add(item.getId().toString());
-//            yVals.add(new Entry(item.getScore(), i));
-//        }
-//
-//        LineDataSet set1 = new LineDataSet(yVals, getString(R.string.score));
-//        set1.setColor(getResources().getColor(R.color.app_primary));
-//        set1.setCircleColor(getResources().getColor(R.color.app_primary));
-//        set1.setLineWidth(2f);
-//        set1.setCircleSize(4f);
-//        set1.setHighLightColor(getResources().getColor(R.color.app_accent));
-//
-//        final LineData data = new LineData(xVals, set1);
-//
-//        getUiHandler().post(new Runnable() {
-//            @Override
-//            public void run() {
-//                mChart.setData(data);
-//                mChart.animateX(ANIM_DURATION);
-//
 //                Legend l = mChart.getLegend();
 //
 //                // modify the legend ...
@@ -117,9 +69,6 @@ public class RateProgressActivity extends ActionBarActivity implements LoaderMan
 //
 //                YLabels yl = mChart.getYLabels();
 //                yl.setTextColor(Color.BLACK);
-//            }
-//        });
-//    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {

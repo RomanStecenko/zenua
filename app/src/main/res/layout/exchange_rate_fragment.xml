@@ -2,13 +2,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="?attr/actionBarSize"
+    tools:background="@android:color/darker_gray">
 
     <TextView
         android:id="@+id/updated"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         style="@style/TextView.Description"
@@ -18,7 +19,7 @@
         android:id="@+id/description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
+        android:paddingTop="@dimen/description_top"
         android:layout_below="@id/updated"
         android:layout_centerHorizontal="true"
         style="@style/TextView.Description"
@@ -36,7 +37,7 @@
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
+            android:paddingTop="@dimen/description_top"
             android:orientation="horizontal">
 
             <TextView
@@ -44,7 +45,7 @@
                 android:layout_weight="1"
                 android:gravity="center_horizontal"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:textSize="@dimen/buy_sell_title"
                 android:text="@string/buy"
                 style="@style/TextView.Description"/>
 
@@ -53,7 +54,7 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:textSize="20sp"
+                android:textSize="@dimen/buy_sell_title"
                 android:text="@string/sell"
                 style="@style/TextView.Description"/>
 
@@ -79,7 +80,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
-                    android:textSize="50sp"
+                    android:textSize="@dimen/rate_numbers"
                     style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
@@ -89,7 +90,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
-                    android:textSize="50sp"
+                    android:textSize="@dimen/rate_numbers"
                     style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
@@ -99,7 +100,7 @@
                 android:id="@+id/usd_rate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="50sp"
+                android:textSize="@dimen/rate_numbers"
                 style="@style/TextView.RateValue"
                 tools:text="25.5" />
 
@@ -107,6 +108,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/TextView.Description"
+                android:textSize="@dimen/rate_title"
                 android:text="@string/usd" />
 
         </LinearLayout>
@@ -131,7 +133,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
-                    android:textSize="50sp"
+                    android:textSize="@dimen/rate_numbers"
                     style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
@@ -141,7 +143,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
-                    android:textSize="50sp"
+                    android:textSize="@dimen/rate_numbers"
                     style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
@@ -151,7 +153,7 @@
                 android:id="@+id/eur_rate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="50sp"
+                android:textSize="@dimen/rate_numbers"
                 style="@style/TextView.RateValue"
                 tools:text="35.5" />
 
@@ -159,6 +161,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/TextView.Description"
+                android:textSize="@dimen/rate_title"
                 android:text="@string/eur" />
 
         </LinearLayout>
@@ -183,7 +186,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
-                    android:textSize="50sp"
+                    android:textSize="@dimen/rate_numbers"
                     style="@style/TextView.RateValue"
                     tools:text="24.3" />
 
@@ -193,7 +196,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
-                    android:textSize="50sp"
+                    android:textSize="@dimen/rate_numbers"
                     style="@style/TextView.RateValue"
                     tools:text="26.7" />
 
@@ -203,7 +206,7 @@
                 android:id="@+id/rub_rate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="50sp"
+                android:textSize="@dimen/rate_numbers"
                 style="@style/TextView.RateValue"
                 tools:text="0.5" />
 
@@ -211,6 +214,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/TextView.Description"
+                android:textSize="@dimen/rate_title"
                 android:text="@string/rub" />
 
         </LinearLayout>

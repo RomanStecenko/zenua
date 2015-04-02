@@ -1,5 +1,8 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="description_top">8dp</dimen>
+    <dimen name="land_buy_sell_left_right">16dp</dimen>
+    <dimen name="buy_sell_title">20sp</dimen>
+    <dimen name="rate_numbers">50sp</dimen>
+    <dimen name="rate_title">16sp</dimen>
 </resources>

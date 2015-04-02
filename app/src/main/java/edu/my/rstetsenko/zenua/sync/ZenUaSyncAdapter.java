@@ -249,7 +249,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
         String orgType = "orgType";
         //orgType: 1 - banks
         //orgType: 2 - exchange office
-        //TODO provide choosing banks / exchange office
+        //TODO provide choosing banks / exchange offices
         String currencies = "currencies";
 
         try {
@@ -438,7 +438,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
 //                int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
                 String title = context.getString(R.string.app_name);
 
-                    //TODO add description and\or icon of rate source
+                    //TODO add description and\or icon of rate source. maybe custom layout?
                     NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getContext())
                             .setSmallIcon(R.mipmap.ic_launcher)
                             .setContentTitle(title)

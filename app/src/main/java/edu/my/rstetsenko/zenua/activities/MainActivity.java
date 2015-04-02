@@ -1,11 +1,18 @@
 package edu.my.rstetsenko.zenua.activities;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +35,8 @@ public class MainActivity extends ActionBarActivity {
     private MediaPlayer mediaPlayer;
     private boolean isPlayerPrepared = false;
     private int mSourceId;
+    private View container;
+    private int screenHeight, screenWidth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +49,14 @@ public class MainActivity extends ActionBarActivity {
         mSourceId = Utility.getPreferredSource();
         setContentView(R.layout.activity_main);
 
+        container = findViewById(R.id.container);
+        getScreenSize();
 
         videoView = (VideoView) findViewById(R.id.video_view);
         videoView.setVideoURI(getVideoUri());
         videoView.setOnPreparedListener(preparedListener);
-//        videoView.setOnCompletionListener(onCompletionListener);
         videoView.setOnErrorListener(onErrorListener);
-        LogMessage("onCreate");//, videoView setVideoURI, listeners");
+        LogMessage("onCreate");
         mediaPlayer = MediaPlayer.create(this, R.raw.wawe49s);
         isPlayerPrepared = false;
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -60,15 +70,6 @@ public class MainActivity extends ActionBarActivity {
                 mp.setLooping(true);
             }
         });
-//        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//            @Override
-//            public void onCompletion(MediaPlayer mp) {
-//                isPlayerPrepared = true;
-//                if (Utility.isSoundOn()) {
-//                    mediaPlayer.start();
-//                }
-//            }
-//        });
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -76,6 +77,7 @@ public class MainActivity extends ActionBarActivity {
                     .commit();
         }
         ZenUaSyncAdapter.initializeSyncAdapter(this);
+        //TODO WIDGET, Tablet view, handle VideoView state. maybe migrate sources from settings to navigation drawer
     }
 
     @Override
@@ -85,17 +87,7 @@ public class MainActivity extends ActionBarActivity {
             mediaPlayer.start();
             LogMessage("Start mediaPlayer onStart");
         }
-//        videoView.resume();
-        LogMessage("onStart");//, videoView.resume()");
-    }
-
-    @Override
-    public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-//        isPlayerPrepared = savedInstanceState.getBoolean(PLAYER_STATE, false);
-//        videoPosition = savedInstanceState.getInt(VIDEO_POSITION, 0);
-        LogMessage("onRestoreInstanceState");//, videoView.seekTo(videoPosition), videoPosition = " + videoPosition);
-//        videoView.seekTo(videoPosition);
+        LogMessage("onStart");
     }
 
     @Override
@@ -128,18 +120,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         super.onPause();
-//        videoPosition = videoView.getCurrentPosition();
-        LogMessage("onPause");//, videoView.getCurrentPosition(), videoPosition = " + videoPosition);
+        LogMessage("onPause");
     }
-
-//    @Override
-//    public void onSaveInstanceState(Bundle savedInstanceState) {
-//        super.onSaveInstanceState(savedInstanceState);
-//        savedInstanceState.putInt(VIDEO_POSITION, videoPosition);
-//        savedInstanceState.putBoolean(PLAYER_STATE, isPlayerPrepared);
-//        LogMessage("onSaveInstanceState");//, videoView.pause(), PUT videoPosition = "+ videoPosition + " current pos:" + videoView.getCurrentPosition());
-//        videoView.pause();
-//    }
 
     @Override
     protected void onStop() {
@@ -150,7 +132,7 @@ public class MainActivity extends ActionBarActivity {
 //        if (videoView != null && videoView.isPlaying()) {
 //            videoView.pause();
 //        }
-        LogMessage("onStop, videoView.pause()"); //videoView.getCurrentPosition() - will be 0 here
+        LogMessage("onStop, videoView.pause()");
     }
 
     @Override
@@ -167,16 +149,6 @@ public class MainActivity extends ActionBarActivity {
         LogMessage("onDestroy");
     }
 
-//    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
-//        @Override
-//        public void onCompletion(MediaPlayer mp) {
-//            mp.reset();
-//            videoView.setVideoURI(getVideoUri());
-//            videoView.start();
-//            LogMessage("onCompletion, videoView.start()");
-//        }
-//    };
-
     private MediaPlayer.OnPreparedListener preparedListener = new MediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared(MediaPlayer mp) {
@@ -187,12 +159,20 @@ public class MainActivity extends ActionBarActivity {
     };
 
     private MediaPlayer.OnErrorListener onErrorListener = new MediaPlayer.OnErrorListener() {
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
         @Override
         public boolean onError(MediaPlayer mp, int what, int extra) {
             LogMessage("MediaPlayer.OnErrorListener, what:" + what + ", extra:" + extra);
             videoView.setVisibility(View.INVISIBLE);
             videoView.suspend();
-            findViewById(R.id.container).setBackgroundResource(R.drawable.sea5);
+            Bitmap background = decodeFile(R.drawable.sea5);
+            BitmapDrawable backgroundDrawable = new BitmapDrawable(getResources(), background);
+            int sdk = android.os.Build.VERSION.SDK_INT;
+            if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                container.setBackgroundDrawable(backgroundDrawable);
+            } else {
+                container.setBackground(backgroundDrawable);
+            }
             return true;
         }
     };
@@ -230,6 +210,31 @@ public class MainActivity extends ActionBarActivity {
             soundItem.setTitle(getString(R.string.sound_off));
             soundItem.setIcon(R.drawable.ic_volume_off);
         }
+    }
+
+    private void getScreenSize(){
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        screenHeight = displaymetrics.heightPixels;
+        screenWidth = displaymetrics.widthPixels;
+    }
+
+    private Bitmap decodeFile(int imageId) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        Resources resources = getResources();
+        BitmapFactory.decodeResource(resources, imageId, options);
+        final int longest = options.outHeight > options.outWidth ? options.outHeight : options.outWidth;
+        int required = screenHeight > screenWidth ? screenHeight/2 : screenWidth/2;
+        int inSampleSize = 1;
+        if (longest > required) {
+            while ((longest / inSampleSize) > required) {
+                inSampleSize *= 2;
+            }
+        }
+        options.inSampleSize = inSampleSize;
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeResource(resources, imageId, options);
     }
 
     private void LogMessage(String msg) {
