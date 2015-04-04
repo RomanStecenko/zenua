@@ -77,7 +77,7 @@ public class MainActivity extends ActionBarActivity {
                     .commit();
         }
         ZenUaSyncAdapter.initializeSyncAdapter(this);
-        //TODO WIDGET, Tablet view, handle VideoView state. maybe migrate sources from settings to navigation drawer
+        //TODO WIDGET, Tablet view, handle VideoView state. maybe migrate selecting of sources from settings to navigation drawer
     }
 
     @Override

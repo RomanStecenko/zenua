@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -71,6 +72,12 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         buySellRUB = (LinearLayout) rootView.findViewById(R.id.buy_sell_rub);
         rubRateBuy = (TextView) buySellRUB.findViewById(R.id.rub_rate_buy);
         rubRateSell = (TextView) buySellRUB.findViewById(R.id.rub_rate_sell);
+        int paddingTop = rootView.getPaddingTop();
+        if (ViewConfiguration.get(getActivity()).hasPermanentMenuKey()) {
+            rootView.setPadding(0, paddingTop, 0, 0);
+        } else {
+            rootView.setPadding(0, paddingTop, 0, paddingTop);
+        }
         rootView.setOnClickListener(onClickListener);
         return rootView;
     }

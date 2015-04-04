@@ -5,6 +5,7 @@
 
     <item
         android:id="@+id/sound"
+        android:orderInCategory="50"
         android:title="@string/sound_on"
         android:icon="@drawable/ic_volume_on"
         app:showAsAction="ifRoom" />

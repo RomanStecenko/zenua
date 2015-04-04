@@ -2,6 +2,8 @@ package edu.my.rstetsenko.zenua;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 
 import java.text.DateFormat;
@@ -196,5 +198,14 @@ public class Utility {
 
     public static String prepareRateDescriptionString(double usd, double eur, double rub) {
         return String.format("USD: %.2f%nEUR: %.2f%nRUB: %.2f", usd, eur, rub);
+    }
+
+    public static boolean isConnectedToInternet(Context context) {
+        if (context == null) {
+            return false;
+        }
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo net = cm.getActiveNetworkInfo();
+        return net != null && net.isAvailable() && net.isConnected();
     }
 }

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/double_rate_view"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/land_buy_sell_left_right"
+    android:paddingRight="@dimen/land_buy_sell_left_right"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/legend_top_bottom_padding"
+        android:paddingBottom="@dimen/legend_top_bottom_padding"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/usd"/>
+
+        <View
+            android:id="@+id/legend_usd_buy_color"
+            android:layout_width="@dimen/view_width_height"
+            android:layout_height="@dimen/view_width_height"
+            android:background="@android:color/holo_blue_bright" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/legend_view_lef_padding"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/buy"/>
+
+        <View
+            android:id="@+id/legend_usd_sell_color"
+            android:layout_width="@dimen/view_width_height"
+            android:layout_height="@dimen/view_width_height"
+            android:background="@android:color/holo_green_light" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/legend_view_lef_padding"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/sell"/>
+
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/legend_top_bottom_padding"
+        android:paddingBottom="@dimen/legend_top_bottom_padding"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/eur"/>
+
+        <View
+            android:id="@+id/legend_eur_buy_color"
+            android:layout_width="@dimen/view_width_height"
+            android:layout_height="@dimen/view_width_height"
+            android:background="@android:color/holo_red_light" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/legend_view_lef_padding"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/buy"/>
+
+        <View
+            android:id="@+id/legend_eur_sell_color"
+            android:layout_width="@dimen/view_width_height"
+            android:layout_height="@dimen/view_width_height"
+            android:background="@android:color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/legend_view_lef_padding"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/sell"/>
+
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/legend_top_bottom_padding"
+        android:paddingBottom="@dimen/legend_top_bottom_padding"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/rub"/>
+
+        <View
+            android:id="@+id/legend_rub_buy_color"
+            android:layout_width="@dimen/view_width_height"
+            android:layout_height="@dimen/view_width_height"
+            android:background="@android:color/holo_orange_light" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/legend_view_lef_padding"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/buy"/>
+
+        <View
+            android:id="@+id/legend_rub_sell_color"
+            android:layout_width="@dimen/view_width_height"
+            android:layout_height="@dimen/view_width_height"
+            android:background="@android:color/holo_purple" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/legend_view_lef_padding"
+            android:paddingRight="@dimen/legend_padding"
+            android:text="@string/sell"/>
+
+    </LinearLayout>
+
+</LinearLayout>

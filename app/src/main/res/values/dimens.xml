@@ -5,4 +5,8 @@
     <dimen name="buy_sell_title">20sp</dimen>
     <dimen name="rate_numbers">50sp</dimen>
     <dimen name="rate_title">16sp</dimen>
+    <dimen name="legend_padding">8dp</dimen>
+    <dimen name="legend_top_bottom_padding">4dp</dimen>
+    <dimen name="legend_view_lef_padding">8dp</dimen>
+    <dimen name="view_width_height">16dp</dimen>
 </resources>

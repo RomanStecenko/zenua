@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rate_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingBottom="@dimen/legend_top_bottom_padding"
+    android:paddingLeft="@dimen/land_buy_sell_left_right"
+    android:paddingRight="@dimen/land_buy_sell_left_right"
+    android:paddingTop="@dimen/legend_top_bottom_padding"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <View
+        android:id="@+id/legend_usd_buy_color"
+        android:layout_width="@dimen/view_width_height"
+        android:layout_height="@dimen/view_width_height"
+        android:background="@android:color/holo_blue_bright" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/legend_view_lef_padding"
+        android:paddingRight="@dimen/legend_padding"
+        android:text="@string/usd" />
+
+    <View
+        android:id="@+id/legend_usd_sell_color"
+        android:layout_width="@dimen/view_width_height"
+        android:layout_height="@dimen/view_width_height"
+        android:background="@android:color/holo_green_light" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/legend_view_lef_padding"
+        android:paddingRight="@dimen/legend_padding"
+        android:text="@string/eur" />
+
+    <View
+        android:id="@+id/legend_eur_buy_color"
+        android:layout_width="@dimen/view_width_height"
+        android:layout_height="@dimen/view_width_height"
+        android:background="@android:color/holo_red_light" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/legend_view_lef_padding"
+        android:paddingRight="@dimen/legend_padding"
+        android:text="@string/rub" />
+
+</LinearLayout>

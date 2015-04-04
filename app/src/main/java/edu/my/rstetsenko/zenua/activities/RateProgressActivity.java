@@ -1,7 +1,7 @@
 package edu.my.rstetsenko.zenua.activities;
 
+import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -9,17 +9,15 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.utils.ValueFormatter;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
@@ -31,21 +29,20 @@ public class RateProgressActivity extends ActionBarActivity implements LoaderMan
 
     private static final int RATE_PROGRESS_LOADER_ID = 11;
     private final String LOG_TAG = this.getClass().getSimpleName();
-    private static final int SINGLE_RATE_CHARTS = 3;
-    private static final int DOUBLE_RATE_CHARTS = 6;
-
 
     private LineChart mChart;
+    private boolean singleRate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rate_progress);
-        //TODO clean code; optimization; move description below chart; legend in two lines.
+        //TODO clean code; optimization.
         int sourceId = Utility.getPreferredSource();
-        String description = Utility.getSourceName(sourceId);
+        singleRate = Constants.singleRates.contains(sourceId);
+        getSupportActionBar().setTitle(Utility.getSourceName(sourceId));
         mChart = (LineChart) findViewById(R.id.chart);
-        mChart.setDescription(description);
+        mChart.setDescription("");
         mChart.setNoDataTextDescription("Need Internet connection to sync with source");
         mChart.setDrawGridBackground(false);
         mChart.setHighlightEnabled(true);
@@ -53,22 +50,10 @@ public class RateProgressActivity extends ActionBarActivity implements LoaderMan
         mChart.setDragEnabled(true);
         mChart.setScaleEnabled(true);
         mChart.setPinchZoom(false);
+//        View rate_legend = findViewById(R.id.rate_view);
+//        View double_rate_legend = findViewById(R.id.double_rate_view);
         getSupportLoaderManager().initLoader(RATE_PROGRESS_LOADER_ID, null, this);
     }
-
-//                Legend l = mChart.getLegend();
-//
-//                // modify the legend ...
-//                l.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
-//                l.setFormSize(10f);
-//                l.setForm(Legend.LegendForm.CIRCLE);
-//                l.setTextColor(Color.BLACK);
-//
-//                XLabels xl = mChart.getXLabels();
-//                xl.setTextColor(Color.BLACK);
-//
-//                YLabels yl = mChart.getYLabels();
-//                yl.setTextColor(Color.BLACK);
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -113,8 +98,8 @@ public class RateProgressActivity extends ActionBarActivity implements LoaderMan
         ArrayList<Entry> rubSellValues = new ArrayList<>();
 
         int i = 0;
-        int sourceId = data.getInt(Utility.COL_SOURCE_ID);
-        boolean singleRate = Constants.singleRates.contains(sourceId);
+//        int sourceId = data.getInt(Utility.COL_SOURCE_ID);
+//        boolean singleRate = Constants.singleRates.contains(sourceId);
         do {
                 xVals.add(Utility.getDayAndMonth(data.getLong(Utility.COL_DATE)));
                 if (singleRate) {
@@ -164,6 +149,16 @@ public class RateProgressActivity extends ActionBarActivity implements LoaderMan
 
         LineData lineData = new LineData(xVals, dataSets);
         mChart.setData(lineData);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mChart.getLegend().setEnabled(false);
+            if (singleRate) {
+                findViewById(R.id.rate_view).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.double_rate_view).setVisibility(View.VISIBLE);
+            }
+        }
+        //TODO migrate from views to checkboxes
         mChart.invalidate();
         mChart.animateX(3000);
     }
@@ -177,5 +172,13 @@ public class RateProgressActivity extends ActionBarActivity implements LoaderMan
         set.setLineWidth(2f);
         set.setCircleSize(4f);
         set.setHighLightColor(getResources().getColor(highLightColorId));
+        set.setValueFormatter(new ExchangeRateFormatter());
+    }
+
+    public class ExchangeRateFormatter implements ValueFormatter {
+        @Override
+        public String getFormattedValue(float value) {
+            return String.format("%6.2f", value);
+        }
     }
 }

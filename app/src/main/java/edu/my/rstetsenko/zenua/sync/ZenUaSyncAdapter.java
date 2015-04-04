@@ -14,8 +14,6 @@ import android.content.Intent;
 import android.content.SyncRequest;
 import android.content.SyncResult;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -161,7 +159,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
              * here.
              */
             onAccountCreated(newAccount, context);
-            if (!isConnectedToInternet(context)) {
+            if (!Utility.isConnectedToInternet(context)) {
                 Toast.makeText(context, context.getString(R.string.check_internet_connection), Toast.LENGTH_LONG).show();
             }
         }
@@ -469,11 +467,5 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                 cursor.close();
             }
         }
-    }
-
-    private static boolean isConnectedToInternet(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo net = cm.getActiveNetworkInfo();
-        return net != null && net.isAvailable() && net.isConnected();
     }
 }
