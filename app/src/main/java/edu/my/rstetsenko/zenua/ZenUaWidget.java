@@ -29,22 +29,6 @@ public class ZenUaWidget extends AppWidgetProvider {
         context.startService(intent);
 
         Log.d(LOG_TAG, "onUpdate " + Arrays.toString(appWidgetIds));
-
-//        int sourceId = Utility.getPreferredSource();
-//        boolean singleRate = Constants.singleRates.contains(sourceId);
-//        Uri uri = singleRate ?
-//                RateContract.RateEntry.buildRateSourceIdWithLastDate(sourceId):
-//                RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithLastDate(sourceId);
-//
-//        String[] projection = singleRate ?
-//                Utility.RATE_COLUMNS : Utility.DOUBLE_RATE_COLUMNS;
-//
-//        String sortOrder = RateBaseColumns.COLUMN_DATE + " DESC";
-//        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, sortOrder);
-//        for (int id : appWidgetIds) {
-//            updateWidget(context, appWidgetManager, cursor, id, singleRate);
-//        }
-//        cursor.close();
     }
 
     @Override

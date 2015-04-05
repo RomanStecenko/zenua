@@ -14,7 +14,6 @@ import android.widget.RemoteViews;
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
 import edu.my.rstetsenko.zenua.Utility;
-import edu.my.rstetsenko.zenua.ZenUaWidget;
 import edu.my.rstetsenko.zenua.activities.MainActivity;
 import edu.my.rstetsenko.zenua.data.RateBaseColumns;
 import edu.my.rstetsenko.zenua.data.RateContract;
