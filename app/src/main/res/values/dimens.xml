@@ -9,4 +9,7 @@
     <dimen name="legend_top_bottom_padding">4dp</dimen>
     <dimen name="legend_view_lef_padding">8dp</dimen>
     <dimen name="view_width_height">16dp</dimen>
+    <dimen name="widget_rate_numbers">30sp</dimen>
+    <dimen name="widget_buy_sell_title">16sp</dimen>
+    <dimen name="widget_titles_padding_right">8dp</dimen>
 </resources>

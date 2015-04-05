@@ -54,6 +54,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingTop="@dimen/description_top"
                 android:textSize="@dimen/buy_sell_title"
                 android:text="@string/buy"
                 style="@style/TextView.Description"
