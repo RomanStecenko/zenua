@@ -16,4 +16,5 @@
     <string name="check_internet_connection">Проверьте подключение к Интернету</string>
     <string name="title_activity_rate_progress">Графики курсов</string>
     <string name="chart_of">График курса&#160;</string>
+    <string name="amount">Количество</string>
 </resources>

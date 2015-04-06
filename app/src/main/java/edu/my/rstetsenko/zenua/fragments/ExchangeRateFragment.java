@@ -11,6 +11,8 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.ShareActionProvider;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,8 +21,13 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
@@ -35,18 +42,22 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
 
     private static final String SHARE_TAG = " #ZenUA";
     private static final int EXCHANGE_RATE_LOADER_ID = 0;
+    private static final long CONVERTER_LIMIT = 1000000000000L;
 
     private ShareActionProvider mShareActionProvider;
 
-    private TextView usdTextView;
-    private TextView eurTextView;
-    private TextView rubTextView;
+    private TextView usdTextView, eurTextView, rubTextView;
     private TextView usdRateBuy, usdRateSell, eurRateBuy, eurRateSell, rubRateBuy, rubRateSell, description;
     private TextView updateDateTextView;
     private LinearLayout buySellTitles, buySellUSD, buySellEUR, buySellRUB;
     private Button sourceButton;
     private Uri uriToSource;
     private String shareString;
+    private View converterView, converterSellLayout;
+    private TextView converterUsd, converterEur, converterRub, converterUsdSell, converterEurSell, converterRubSell, converterBuyTitle, converterPlaceholder;
+    private EditText converterEditText;
+    private boolean singleRate;
+    private NumberFormat fmt;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -79,6 +90,19 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             rootView.setPadding(0, paddingTop, 0, paddingTop);
         }
         rootView.setOnClickListener(onClickListener);
+        converterView = rootView.findViewById(R.id.converter);
+        if (converterView != null) {
+            converterSellLayout = converterView.findViewById(R.id.converter_sell_layout);
+            converterUsd = (TextView) converterView.findViewById(R.id.usd_result);
+            converterEur = (TextView) converterView.findViewById(R.id.eur_result);
+            converterRub = (TextView) converterView.findViewById(R.id.rub_result);
+            converterUsdSell = (TextView) converterSellLayout.findViewById(R.id.usd_result_sell);
+            converterEurSell = (TextView) converterSellLayout.findViewById(R.id.eur_result_sell);
+            converterRubSell = (TextView) converterSellLayout.findViewById(R.id.rub_result_sell);
+            converterBuyTitle = (TextView) converterView.findViewById(R.id.converter_buy_title);
+            converterPlaceholder = (TextView) converterView.findViewById(R.id.converter_placeholder);
+            converterEditText = (EditText) converterView.findViewById(R.id.converter_edit_text);
+        }
         return rootView;
     }
 
@@ -86,6 +110,10 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         sourceButton.setOnClickListener(onClickListener);
+        if (converterView != null) {
+            fmt = NumberFormat.getNumberInstance(Locale.US);
+            converterEditText.setText("1");
+        }
     }
 
     @Override
@@ -164,7 +192,8 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     }
 
     private void toggleLayout(int sourceNumber) {
-        if (Constants.singleRates.contains(sourceNumber)) {
+        singleRate = Constants.singleRates.contains(sourceNumber);
+        if (singleRate) {
             usdTextView.setVisibility(View.VISIBLE);
             eurTextView.setVisibility(View.VISIBLE);
             rubTextView.setVisibility(View.VISIBLE);
@@ -180,6 +209,21 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             buySellEUR.setVisibility(View.VISIBLE);
             buySellRUB.setVisibility(View.VISIBLE);
             buySellTitles.setVisibility(View.VISIBLE);
+        }
+        if (converterView != null) {
+            toggleConverterLayout();
+        }
+    }
+
+    private void toggleConverterLayout() {
+        if (singleRate) {
+            converterPlaceholder.setVisibility(View.GONE);
+            converterBuyTitle.setVisibility(View.GONE);
+            converterSellLayout.setVisibility(View.GONE);
+        } else {
+            converterPlaceholder.setVisibility(View.INVISIBLE);
+            converterBuyTitle.setVisibility(View.VISIBLE);
+            converterSellLayout.setVisibility(View.VISIBLE);
         }
     }
 
@@ -212,19 +256,19 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     }
 
     private void setRate(double usd, double eur, double rub) {
-        usdTextView.setText(String.format("%.2f", usd));
-        eurTextView.setText(String.format("%.2f", eur));
-        rubTextView.setText(String.format("%.2f", rub));
+        usdTextView.setText(String.format(Locale.US, "%.2f", usd));
+        eurTextView.setText(String.format(Locale.US, "%.2f", eur));
+        rubTextView.setText(String.format(Locale.US, "%.2f", rub));
         shareString = Utility.prepareRateDescriptionString(usd, eur, rub);
     }
 
     private void setDoubleRate(double usdBuy, double usdSell, double eurBuy, double eurSell, double rubBuy, double rubSell) {
-        usdRateBuy.setText(String.format("%.2f", usdBuy));
-        usdRateSell.setText(String.format("%.2f", usdSell));
-        eurRateBuy.setText(String.format("%.2f", eurBuy));
-        eurRateSell.setText(String.format("%.2f", eurSell));
-        rubRateBuy.setText(String.format("%.2f", rubBuy));
-        rubRateSell.setText(String.format("%.2f", rubSell));
+        usdRateBuy.setText(String.format(Locale.US, "%.2f", usdBuy));
+        usdRateSell.setText(String.format(Locale.US, "%.2f", usdSell));
+        eurRateBuy.setText(String.format(Locale.US, "%.2f", eurBuy));
+        eurRateSell.setText(String.format(Locale.US, "%.2f", eurSell));
+        rubRateBuy.setText(String.format(Locale.US, "%.2f", rubBuy));
+        rubRateSell.setText(String.format(Locale.US, "%.2f", rubSell));
         shareString = Utility.prepareDoubleRateDescriptionString(usdBuy, usdSell, eurBuy, eurSell, rubBuy, rubSell);
     }
 
@@ -306,6 +350,11 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(getShareIntent());
         }
+        try {
+            initConverterValues();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -314,5 +363,73 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onSourceChanged() {
         loadData();
         getLoaderManager().restartLoader(EXCHANGE_RATE_LOADER_ID, null, this);
+    }
+
+    private void initConverterValues() throws ParseException {
+        if (converterView != null) {
+            converterView.setVisibility(View.VISIBLE);
+            final double usrRateValue;
+            final double eurRateValue;
+            final double rubRateValue;
+            final double usdRateValueSell;
+            final double eurRateValueSell;
+            final double rubRateValueSell;
+
+                if (singleRate) {
+                    usrRateValue = fmt.parse(usdTextView.getText().toString()).doubleValue();
+                    eurRateValue = fmt.parse(eurTextView.getText().toString()).doubleValue();
+                    rubRateValue = fmt.parse(rubTextView.getText().toString()).doubleValue();
+                    usdRateValueSell = 0;
+                    eurRateValueSell = 0;
+                    rubRateValueSell = 0;
+                } else {
+                    usrRateValue = fmt.parse(usdRateBuy.getText().toString()).doubleValue();
+                    eurRateValue = fmt.parse(eurRateBuy.getText().toString()).doubleValue();
+                    rubRateValue = fmt.parse(rubRateBuy.getText().toString()).doubleValue();
+                    usdRateValueSell = fmt.parse(usdRateSell.getText().toString()).doubleValue();
+                    eurRateValueSell = fmt.parse(eurRateSell.getText().toString()).doubleValue();
+                    rubRateValueSell = fmt.parse(rubRateSell.getText().toString()).doubleValue();
+                }
+            converterUsd.setText(String.valueOf(usrRateValue));
+            converterEur.setText(String.valueOf(eurRateValue));
+            converterRub.setText(String.valueOf(rubRateValue));
+            if (!singleRate) {
+                converterUsdSell.setText(String.valueOf(usdRateValueSell));
+                converterEurSell.setText(String.valueOf(eurRateValueSell));
+                converterRubSell.setText(String.valueOf(rubRateValueSell));
+            }
+            converterEditText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (s.length() > 0) {
+                        double value = 1;
+                        try {
+                            value = fmt.parse(s.toString()).doubleValue();
+                            if (value <= 0) {
+                                value = 1;
+                            }
+                            if (value > CONVERTER_LIMIT) {
+                                value = CONVERTER_LIMIT;
+                                converterEditText.setText(String.valueOf(CONVERTER_LIMIT));
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        converterUsd.setText(String.format(Locale.US, "%.2f", value * usrRateValue));
+                        converterEur.setText(String.format(Locale.US, "%.2f", value * eurRateValue));
+                        converterRub.setText(String.format(Locale.US, "%.2f", value * rubRateValue));
+                        if (!singleRate) {
+                            converterUsdSell.setText(String.format(Locale.US, "%.2f", value * usdRateValueSell));
+                            converterEurSell.setText(String.format(Locale.US, "%.2f", value * eurRateValueSell));
+                            converterRubSell.setText(String.format(Locale.US, "%.2f", value * rubRateValueSell));
+                        }
+                    }
+                }
+            });
+        }
     }
 }
