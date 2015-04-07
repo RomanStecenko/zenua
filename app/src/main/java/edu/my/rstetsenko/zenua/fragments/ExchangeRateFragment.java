@@ -390,13 +390,13 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                     eurRateValueSell = fmt.parse(eurRateSell.getText().toString()).doubleValue();
                     rubRateValueSell = fmt.parse(rubRateSell.getText().toString()).doubleValue();
                 }
-            converterUsd.setText(String.valueOf(usrRateValue));
-            converterEur.setText(String.valueOf(eurRateValue));
-            converterRub.setText(String.valueOf(rubRateValue));
+            converterUsd.setText(String.format(Locale.US, "%.2f", 1 / usrRateValue));
+            converterEur.setText(String.format(Locale.US, "%.2f", 1 / eurRateValue));
+            converterRub.setText(String.format(Locale.US, "%.2f", 1 / rubRateValue));
             if (!singleRate) {
-                converterUsdSell.setText(String.valueOf(usdRateValueSell));
-                converterEurSell.setText(String.valueOf(eurRateValueSell));
-                converterRubSell.setText(String.valueOf(rubRateValueSell));
+                converterUsdSell.setText(String.format(Locale.US, "%.2f", 1 / usdRateValueSell));
+                converterEurSell.setText(String.format(Locale.US, "%.2f", 1 / eurRateValueSell));
+                converterRubSell.setText(String.format(Locale.US, "%.2f", 1 / rubRateValueSell));
             }
             converterEditText.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -419,13 +419,13 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
-                        converterUsd.setText(String.format(Locale.US, "%.2f", value * usrRateValue));
-                        converterEur.setText(String.format(Locale.US, "%.2f", value * eurRateValue));
-                        converterRub.setText(String.format(Locale.US, "%.2f", value * rubRateValue));
+                        converterUsd.setText(String.format(Locale.US, "%.2f", value / usrRateValue));
+                        converterEur.setText(String.format(Locale.US, "%.2f", value / eurRateValue));
+                        converterRub.setText(String.format(Locale.US, "%.2f", value / rubRateValue));
                         if (!singleRate) {
-                            converterUsdSell.setText(String.format(Locale.US, "%.2f", value * usdRateValueSell));
-                            converterEurSell.setText(String.format(Locale.US, "%.2f", value * eurRateValueSell));
-                            converterRubSell.setText(String.format(Locale.US, "%.2f", value * rubRateValueSell));
+                            converterUsdSell.setText(String.format(Locale.US, "%.2f", value / usdRateValueSell));
+                            converterEurSell.setText(String.format(Locale.US, "%.2f", value / eurRateValueSell));
+                            converterRubSell.setText(String.format(Locale.US, "%.2f", value / rubRateValueSell));
                         }
                     }
                 }
