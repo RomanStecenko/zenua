@@ -28,7 +28,7 @@ public class WidgetUpdateService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         //TODO update widget on sync or when preferred source have been changed.
-        //TODO add widget on the Lockscreen (keyguard). Maybe improve layout?
+        //TODO add widget on the Lockscreen (keyguard), fix WIDGET size
         int[] appWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this.getApplicationContext());
 
