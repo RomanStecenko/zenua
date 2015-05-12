@@ -42,7 +42,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WindowManager.LayoutParams attributes = getWindow().getAttributes();
-        attributes.flags |= WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+        attributes.flags |= WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
         getWindow().setAttributes(attributes);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 

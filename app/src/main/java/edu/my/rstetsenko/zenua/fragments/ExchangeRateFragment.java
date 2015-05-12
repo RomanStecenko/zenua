@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -41,6 +42,7 @@ import edu.my.rstetsenko.zenua.sync.ZenUaSyncAdapter;
 public class ExchangeRateFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private static final String SHARE_TAG = " #ZenUA";
+    private static final String LINK_OF_APP_ON_PLAY_MARKET = "https://play.google.com/store/apps";
     private static final int EXCHANGE_RATE_LOADER_ID = 0;
     private static final long CONVERTER_LIMIT = 1000000000000L;
 
@@ -128,6 +130,9 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         super.onStart();
         switchSource(Utility.getPreferredSource());
         toggleActionBar();
+        if (!Utility.isConnectedToInternet(getActivity())) {
+            Toast.makeText(getActivity(), getActivity().getString(R.string.check_internet_connection), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -294,9 +299,11 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-//        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        //TODO add app icon into share intent when it will be prepared
+//        shareIntent.setType("image/*");
+//        Uri uri = Uri.parse("android.resource://"+getActivity().getPackageName() + "/" + R.mipmap.ic_launcher);
+//        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareString + SHARE_TAG);
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, LINK_OF_APP_ON_PLAY_MARKET);
         return shareIntent;
     }
 
