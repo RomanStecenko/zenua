@@ -182,7 +182,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             case Constants.MIN_FIN:
                 uriToSource = Uri.parse("http://www.minfin.com.ua/currency/");
                 break;
-            case Constants.JSON_RATES:
+            case Constants.CURRENCYLAYER:
                 uriToSource = null;
                 break;
             case Constants.OPEN_EXCHANGE_RATES:

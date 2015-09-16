@@ -158,7 +158,7 @@ public class Utility {
             case Constants.PRIVATE:
                 return context.getString(R.string.private_description_cash);
             case Constants.MIN_FIN:
-            case Constants.JSON_RATES:
+            case Constants.CURRENCYLAYER:
             case Constants.OPEN_EXCHANGE_RATES:
                 return "";
             case Constants.FINANCE:
@@ -174,8 +174,8 @@ public class Utility {
                 return context.getString(R.string.pref_private_label);
             case Constants.MIN_FIN:
                 return context.getString(R.string.minfin_label);
-            case Constants.JSON_RATES:
-                return context.getString(R.string.pref_jsonrates_label);
+            case Constants.CURRENCYLAYER:
+                return context.getString(R.string.pref_currencylayer_label);
             case Constants.OPEN_EXCHANGE_RATES:
                 return context.getString(R.string.pref_openexchangerates_label);
             case Constants.FINANCE:

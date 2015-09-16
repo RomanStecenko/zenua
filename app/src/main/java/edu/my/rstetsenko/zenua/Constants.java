@@ -13,10 +13,10 @@ public class Constants {
 
     public static final int PRIVATE = 0;
     public static final int MIN_FIN = 1;
-    public static final int JSON_RATES = 2;
+    public static final int CURRENCYLAYER = 2;
     public static final int OPEN_EXCHANGE_RATES = 3;
     public static final int FINANCE = 4;
 
-    public static final Set<Integer> singleRates = new HashSet<>(Arrays.asList(new Integer[]{JSON_RATES, OPEN_EXCHANGE_RATES}));
+    public static final Set<Integer> singleRates = new HashSet<>(Arrays.asList(new Integer[]{CURRENCYLAYER, OPEN_EXCHANGE_RATES}));
 //    public static final Set<Integer> doubleRates = new HashSet<Integer>(Arrays.asList(new Integer[]{PRIVATE, MIN_FIN, FINANCE}));
 }

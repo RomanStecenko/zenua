@@ -13,7 +13,7 @@
     <string name="minfin_label" translatable="false">MIFIN.COM.UA</string>
     <string name="pref_private_label">PrivateBank</string>
     <string name="pref_minfin_label">Ministry of Finance</string>
-    <string name="pref_jsonrates_label" translatable="false">JSONRATES.COM</string>
+    <string name="pref_currencylayer_label" translatable="false">CURRENCYLAYER.COM</string>
     <string name="pref_openexchangerates_label" translatable="false">OPENEXCHANGERATES.ORG</string>
 
     <string name="pref_source_label">Source</string>
@@ -23,7 +23,7 @@
     <string-array name="sources_entries">
         <item>@string/pref_private_label</item>
         <item>@string/pref_minfin_label</item>
-        <item>@string/pref_jsonrates_label</item>
+        <item>@string/pref_currencylayer_label</item>
         <item>@string/pref_openexchangerates_label</item>
         <item>@string/finance_label</item>
     </string-array>

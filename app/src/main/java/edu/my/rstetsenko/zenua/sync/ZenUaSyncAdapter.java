@@ -43,7 +43,10 @@ import edu.my.rstetsenko.zenua.data.RateContract;
 
 public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String OPEN_EXCHANGE_RATES_REQUEST = "http://openexchangerates.org/api/latest.json?app_id=60acbc550c654afd86eea4304cdec3f0";
-    private static final String JSON_RATES_REQUEST = "http://jsonrates.com/get/?%20base=USD&apiKey=jr-878f7938dc3db294f030a675358a2ed9";
+    /** jsonrates.com moved to currencylayer.com    */
+    private static final String CURRENCYLAYER_REQUEST = "http://apilayer.net/api/live?access_key=f240012d96396239cfbe653939eff33e&currencies=EUR,UAH,RUB";
+    /** usage limit has been reached    */
+    private static final int CURRENCYLAYER_ERROR_CODE = 104;
     //    private static final String PRIVATE_NBU_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=3";
     private static final String PRIVATE_CASH_REQUEST = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
     //    private static final String PRIVATE_NON_CASH_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=11";
@@ -209,8 +212,8 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                 return new String[]{PRIVATE_CASH_REQUEST};
             case Constants.MIN_FIN:
                 return new String[]{INTERBANK_BANKS_REQUEST};
-            case Constants.JSON_RATES:
-                return new String[]{JSON_RATES_REQUEST};
+            case Constants.CURRENCYLAYER:
+                return new String[]{CURRENCYLAYER_REQUEST};
             case Constants.OPEN_EXCHANGE_RATES:
                 return new String[]{OPEN_EXCHANGE_RATES_REQUEST};
             case Constants.FINANCE:
@@ -229,8 +232,15 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
         String eur = "EUR";
         String rub = "RUB";
 
-        //jsonrates.com structure:
-        String utctime = "utctime"; //UTC string
+        //currencylayer.com structure:
+        String success = "success";
+        String quotes = "quotes";
+        String usdUah = "USDUAH";
+        String usdEur = "USDEUR";
+        String usdRub = "USDRUB";
+        String error = "error";
+        String code = "code";
+        String info = "info";
 
         //private structure:
         String buy = "buy";
@@ -242,13 +252,15 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
         String usd = "USD";
 
         //finance.ua structure
-        String data = "date"; //UTC string
+        String date = "date"; //UTC string
         String organizations = "organizations";
         String orgType = "orgType";
         //orgType: 1 - banks
         //orgType: 2 - exchange office
         //TODO provide choosing banks / exchange offices
         String currencies = "currencies";
+
+        long receivedTimestamp;
 
         try {
             switch (Utility.getPreferredSource()) {
@@ -272,20 +284,29 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                             rubInterBankJson.getDouble(bid), rubInterBankJson.getDouble(ask));
                     break;
 
-                case Constants.JSON_RATES:
+                case Constants.CURRENCYLAYER:
                     JSONObject wholeJson = new JSONObject(jsonString);
-                    String receivedUTCTime = wholeJson.getString(utctime);
-                    JSONObject ratesJson = wholeJson.getJSONObject(rates);
-                    addRateRow(Constants.JSON_RATES, Utility.getTimeFromUTCDate(receivedUTCTime), ratesJson.getDouble(uah),
-                            ratesJson.getDouble(uah) / ratesJson.getDouble(eur), ratesJson.getDouble(uah) / ratesJson.getDouble(rub));
+                    boolean isSuccessful = wholeJson.getBoolean(success);
+                    if (isSuccessful) {
+                        receivedTimestamp = wholeJson.getLong(timestamp) * 1000;
+                        JSONObject clJson = wholeJson.getJSONObject(quotes);
+                        addRateRow(Constants.CURRENCYLAYER, receivedTimestamp, clJson.getDouble(usdUah),
+                                clJson.getDouble(usdUah) / clJson.getDouble(usdEur), clJson.getDouble(usdUah) / clJson.getDouble(usdRub));
+                    } else {
+                        JSONObject errorResult = wholeJson.getJSONObject(error);
+                        if (errorResult.getInt(code) == CURRENCYLAYER_ERROR_CODE) {
+                            //TODO send intent via broadcastreceiver to show some Dialog
+                            Log.d(Constants.LOG_TAG, errorResult.getString(info));
+                        }
+                    }
                     break;
 
                 case Constants.OPEN_EXCHANGE_RATES:
                     JSONObject openExchangeRatesWholeJson = new JSONObject(jsonString);
-                    long receivedTimestamp = openExchangeRatesWholeJson.getLong(timestamp) * 1000;
-                    JSONObject openExchangeRatesJson = openExchangeRatesWholeJson.getJSONObject(rates);
-                    addRateRow(Constants.OPEN_EXCHANGE_RATES, receivedTimestamp, openExchangeRatesJson.getDouble(uah),
-                            openExchangeRatesJson.getDouble(uah) / openExchangeRatesJson.getDouble(eur), openExchangeRatesJson.getDouble(uah) / openExchangeRatesJson.getDouble(rub));
+                    receivedTimestamp = openExchangeRatesWholeJson.getLong(timestamp) * 1000;
+                    JSONObject oerJson = openExchangeRatesWholeJson.getJSONObject(rates);
+                    addRateRow(Constants.OPEN_EXCHANGE_RATES, receivedTimestamp, oerJson.getDouble(uah),
+                            oerJson.getDouble(uah) / oerJson.getDouble(eur), oerJson.getDouble(uah) / oerJson.getDouble(rub));
                     break;
 
                 case Constants.FINANCE:
@@ -300,10 +321,6 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                     int usdBankCounter = 0;
                     int eurBankCounter = 0;
                     int rubBankCounter = 0;
-                    int usdBankCrashCounter = 0; //temp
-                    int eurBankCrashCounter = 0; //temp
-                    int rubBankCrashCounter = 0; //temp
-                    int totalBankCounter = 0;
                     for (int i = 0; i < banksOfUkraine.length(); i++) {
                         JSONObject bank = banksOfUkraine.getJSONObject(i);
                         if (bank.getInt(orgType) == 1) {
@@ -314,7 +331,6 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                                 usdRateSell += usdFinanceJson.getDouble(ask);
                                 usdBankCounter++;
                             } catch (JSONException ex) {
-                                usdBankCrashCounter++;
                             }
                             try {
                                 JSONObject eurFinanceJson = currenciesJson.getJSONObject(eur);
@@ -322,7 +338,6 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                                 eurRateSell += eurFinanceJson.getDouble(ask);
                                 eurBankCounter++;
                             } catch (JSONException ex) {
-                                eurBankCrashCounter++;
                             }
                             try {
                                 JSONObject rubFinanceJson = currenciesJson.getJSONObject(rub);
@@ -330,9 +345,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                                 rubRateSell += rubFinanceJson.getDouble(ask);
                                 rubBankCounter++;
                             } catch (JSONException ex) {
-                                rubBankCrashCounter++;
                             }
-                            totalBankCounter++;
                         }
                     }
                     if (usdBankCounter == 0) {
@@ -344,12 +357,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
                     if (rubBankCounter == 0) {
                         rubBankCounter = 1; //in case of incorrect json
                     }
-                    Log.d(Constants.LOG_TAG, "USD bank crashes:" + usdBankCrashCounter); //temp
-                    Log.d(Constants.LOG_TAG, "EUR bank crashes:" + eurBankCrashCounter); //temp
-                    Log.d(Constants.LOG_TAG, "RUB bank crashes:" + rubBankCrashCounter); //temp
-                    Log.d(Constants.LOG_TAG, "Total count crashes:" + (usdBankCrashCounter + eurBankCrashCounter + rubBankCrashCounter)); //temp
-                    Log.d(Constants.LOG_TAG, "Total count sources (banks):" + totalBankCounter); //temp
-                    String jsonUpdateDate = financeWholeJson.getString(data);
+                    String jsonUpdateDate = financeWholeJson.getString(date);
                     addDoubleRateRow(Constants.FINANCE, Utility.getTimeFromUTCDate(jsonUpdateDate),
                             usdRateBuy / usdBankCounter, usdRateSell / usdBankCounter,
                             eurRateBuy / eurBankCounter, eurRateSell / eurBankCounter,
@@ -369,6 +377,9 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void addRateRow(int sourceId, long updateDate, double usd, double eur, double rub) {
+        if (usd <= 0 || eur <= 0 || rub <= 0) {
+            return;
+        }
         ContentValues values = new ContentValues();
         values.put(RateBaseColumns.COLUMN_SOURCE_ID, sourceId);
         values.put(RateBaseColumns.COLUMN_DATE, updateDate);
@@ -382,6 +393,10 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void addDoubleRateRow(int sourceId, long updateDate, double usdBuy, double usdSell,
                                   double eurBuy, double eurSell, double rubBuy, double rubSell) {
+        if (usdBuy <= 0 || usdSell <= 0 || eurBuy <= 0 ||  eurSell <= 0 || rubBuy <= 0 || rubSell <= 0) {
+            return;
+            //TODO send intent via broadcastreceiver to show some Dialog
+        }
         ContentValues values = new ContentValues();
         values.put(RateBaseColumns.COLUMN_SOURCE_ID, sourceId);
         values.put(RateBaseColumns.COLUMN_DATE, updateDate);
