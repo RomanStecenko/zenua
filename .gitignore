@@ -8,6 +8,7 @@ local.properties
 .idea/
 *.log
 
-/.idea
-/.navigation
+gradle.properties
+*.keystore
+*.jks
 
