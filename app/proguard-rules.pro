@@ -73,6 +73,8 @@
 # platform version.  We know about them, and they are safe.
 -dontwarn android.support.**
 
+-keep class android.support.v7.widget.ShareActionProvider { *; }
+
 -keep public class * extends android.support.v4.**
 -keep public class * extends android.app.Fragment
 
