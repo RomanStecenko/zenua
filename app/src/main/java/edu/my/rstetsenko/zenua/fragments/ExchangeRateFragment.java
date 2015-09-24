@@ -10,9 +10,8 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.ShareActionProvider;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,13 +20,10 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.Locale;
 
 import edu.my.rstetsenko.zenua.Constants;
@@ -44,7 +40,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     private static final String SHARE_TAG = " #ZenUA";
     private static final String LINK_OF_APP_ON_PLAY_MARKET = "https://play.google.com/store/apps";
     private static final int EXCHANGE_RATE_LOADER_ID = 0;
-    private static final long CONVERTER_LIMIT = 1000000000000L;
 
     private ShareActionProvider mShareActionProvider;
 
@@ -53,13 +48,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     private TextView updateDateTextView;
     private LinearLayout buySellTitles, buySellUSD, buySellEUR, buySellRUB;
     private Button sourceButton;
-    private Uri uriToSource;
     private String shareString;
-    private View converterView, converterSellLayout;
-    private TextView converterUsd, converterEur, converterRub, converterUsdSell, converterEurSell, converterRubSell, converterBuyTitle, converterPlaceholder;
-    private EditText converterEditText;
-    private boolean singleRate;
-    private NumberFormat fmt;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -92,19 +81,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             rootView.setPadding(0, paddingTop, 0, paddingTop);
         }
         rootView.setOnClickListener(onClickListener);
-        converterView = rootView.findViewById(R.id.converter);
-        if (converterView != null) {
-            converterSellLayout = converterView.findViewById(R.id.converter_sell_layout);
-            converterUsd = (TextView) converterView.findViewById(R.id.usd_result);
-            converterEur = (TextView) converterView.findViewById(R.id.eur_result);
-            converterRub = (TextView) converterView.findViewById(R.id.rub_result);
-            converterUsdSell = (TextView) converterSellLayout.findViewById(R.id.usd_result_sell);
-            converterEurSell = (TextView) converterSellLayout.findViewById(R.id.eur_result_sell);
-            converterRubSell = (TextView) converterSellLayout.findViewById(R.id.rub_result_sell);
-            converterBuyTitle = (TextView) converterView.findViewById(R.id.converter_buy_title);
-            converterPlaceholder = (TextView) converterView.findViewById(R.id.converter_placeholder);
-            converterEditText = (EditText) converterView.findViewById(R.id.converter_edit_text);
-        }
         return rootView;
     }
 
@@ -112,10 +88,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         sourceButton.setOnClickListener(onClickListener);
-        if (converterView != null) {
-            fmt = NumberFormat.getNumberInstance(Locale.US);
-            converterEditText.setText("1");
-        }
     }
 
     @Override
@@ -128,10 +100,12 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onStart() {
         super.onStart();
-        switchSource(Utility.getPreferredSource());
+        toggleLayout(Utility.getPreferredSource());
         toggleActionBar();
         if (!Utility.isConnectedToInternet(getActivity())) {
-            Toast.makeText(getActivity(), getActivity().getString(R.string.check_internet_connection), Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(),
+                    getActivity().getString(R.string.check_internet_connection),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -143,16 +117,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         if (shareString != null) {
             mShareActionProvider.setShareIntent(getShareIntent());
         }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()){
-//            case R.id.action_refresh:
-//                loadData();
-//                return true;
-//        }
-        return super.onOptionsItemSelected(item);
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -174,30 +138,10 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         }
     };
 
-    private void switchSource(int sourceNumber) {
-        switch (sourceNumber) {
-            case Constants.PRIVATE:
-                uriToSource = Uri.parse("https://privatbank.ua");
-                break;
-            case Constants.MIN_FIN:
-                uriToSource = Uri.parse("http://www.minfin.com.ua/currency/");
-                break;
-            case Constants.CURRENCYLAYER:
-                uriToSource = null;
-                break;
-            case Constants.OPEN_EXCHANGE_RATES:
-                uriToSource = null;
-                break;
-            case Constants.FINANCE:
-                uriToSource = Uri.parse("http://finance.ua/ru/currency");
-                break;
-        }
-        sourceButton.setText(String.format("%s %s",getString(R.string.chart_of), Utility.getSourceName(sourceNumber)));
-        toggleLayout(sourceNumber);
-    }
-
     private void toggleLayout(int sourceNumber) {
-        singleRate = Constants.singleRates.contains(sourceNumber);
+        sourceButton.setText(String.format("%s %s",getString(R.string.chart_of),
+                Utility.getSourceName(sourceNumber)));
+        boolean singleRate = Constants.singleRates.contains(sourceNumber);
         if (singleRate) {
             usdTextView.setVisibility(View.VISIBLE);
             eurTextView.setVisibility(View.VISIBLE);
@@ -215,49 +159,21 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
             buySellRUB.setVisibility(View.VISIBLE);
             buySellTitles.setVisibility(View.VISIBLE);
         }
-        if (converterView != null) {
-            toggleConverterLayout();
-        }
-    }
-
-    private void toggleConverterLayout() {
-        if (singleRate) {
-            converterPlaceholder.setVisibility(View.GONE);
-            converterBuyTitle.setVisibility(View.GONE);
-            converterSellLayout.setVisibility(View.GONE);
-        } else {
-            converterPlaceholder.setVisibility(View.INVISIBLE);
-            converterBuyTitle.setVisibility(View.VISIBLE);
-            converterSellLayout.setVisibility(View.VISIBLE);
-        }
     }
 
     private void toggleActionBar() {
-        if (Utility.isFullScreen()) {
-            ((MainActivity)getActivity()).getSupportActionBar().hide();
-        } else {
-            ((MainActivity)getActivity()).getSupportActionBar().show();
+        ActionBar actionBar = ((MainActivity)getActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            if (Utility.isFullScreen()) {
+                actionBar.hide();
+            } else {
+                actionBar.show();
+            }
         }
     }
 
     private void loadData(){
-//        if (getActivity() != null && !isConnectedToInternet()) {
-//            Toast.makeText(getActivity(), "Check your Internet connection", Toast.LENGTH_SHORT).show();
-//        } else {
-//            new FetchRateTask(getActivity()).execute(prepareLinks());
-
-//            Intent intent = new Intent(getActivity(), MyService.class);
-//            intent.putExtra(Constants.EXTRA_SOURCE, prepareLinks());
-//            getActivity().startService(intent);
-
-//            Intent alarmIntent = new Intent(getActivity(), MyService.AlarmReceiver.class);
-//            alarmIntent.putExtra(Constants.EXTRA_SOURCE, prepareLinks());
-//            PendingIntent pi = PendingIntent.getBroadcast(getActivity(), 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);//getBroadcast(context, 0, i, 0);
-//            AlarmManager am = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-//            am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pi);
-
             ZenUaSyncAdapter.syncImmediately(getActivity());
-//        }
     }
 
     private void setRate(double usd, double eur, double rub) {
@@ -299,9 +215,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-//        shareIntent.setType("image/*");
-//        Uri uri = Uri.parse("android.resource://"+getActivity().getPackageName() + "/" + R.mipmap.ic_launcher);
-//        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareString + SHARE_TAG);
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, LINK_OF_APP_ON_PLAY_MARKET);
         return shareIntent;
@@ -357,11 +270,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(getShareIntent());
         }
-        try {
-            initConverterValues();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -370,73 +278,5 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onSourceChanged() {
         loadData();
         getLoaderManager().restartLoader(EXCHANGE_RATE_LOADER_ID, null, this);
-    }
-
-    private void initConverterValues() throws ParseException {
-        if (converterView != null) {
-            converterView.setVisibility(View.VISIBLE);
-            final double usrRateValue;
-            final double eurRateValue;
-            final double rubRateValue;
-            final double usdRateValueSell;
-            final double eurRateValueSell;
-            final double rubRateValueSell;
-
-                if (singleRate) {
-                    usrRateValue = fmt.parse(usdTextView.getText().toString()).doubleValue();
-                    eurRateValue = fmt.parse(eurTextView.getText().toString()).doubleValue();
-                    rubRateValue = fmt.parse(rubTextView.getText().toString()).doubleValue();
-                    usdRateValueSell = 0;
-                    eurRateValueSell = 0;
-                    rubRateValueSell = 0;
-                } else {
-                    usrRateValue = fmt.parse(usdRateBuy.getText().toString()).doubleValue();
-                    eurRateValue = fmt.parse(eurRateBuy.getText().toString()).doubleValue();
-                    rubRateValue = fmt.parse(rubRateBuy.getText().toString()).doubleValue();
-                    usdRateValueSell = fmt.parse(usdRateSell.getText().toString()).doubleValue();
-                    eurRateValueSell = fmt.parse(eurRateSell.getText().toString()).doubleValue();
-                    rubRateValueSell = fmt.parse(rubRateSell.getText().toString()).doubleValue();
-                }
-            converterUsd.setText(String.format(Locale.US, "%.2f", 1 / usrRateValue));
-            converterEur.setText(String.format(Locale.US, "%.2f", 1 / eurRateValue));
-            converterRub.setText(String.format(Locale.US, "%.2f", 1 / rubRateValue));
-            if (!singleRate) {
-                converterUsdSell.setText(String.format(Locale.US, "%.2f", 1 / usdRateValueSell));
-                converterEurSell.setText(String.format(Locale.US, "%.2f", 1 / eurRateValueSell));
-                converterRubSell.setText(String.format(Locale.US, "%.2f", 1 / rubRateValueSell));
-            }
-            converterEditText.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {}
-                @Override
-                public void afterTextChanged(Editable s) {
-                    if (s.length() > 0) {
-                        double value = 1;
-                        try {
-                            value = fmt.parse(s.toString()).doubleValue();
-                            if (value <= 0) {
-                                value = 1;
-                            }
-                            if (value > CONVERTER_LIMIT) {
-                                value = CONVERTER_LIMIT;
-                                converterEditText.setText(String.valueOf(CONVERTER_LIMIT));
-                            }
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                        converterUsd.setText(String.format(Locale.US, "%.2f", value / usrRateValue));
-                        converterEur.setText(String.format(Locale.US, "%.2f", value / eurRateValue));
-                        converterRub.setText(String.format(Locale.US, "%.2f", value / rubRateValue));
-                        if (!singleRate) {
-                            converterUsdSell.setText(String.format(Locale.US, "%.2f", value / usdRateValueSell));
-                            converterEurSell.setText(String.format(Locale.US, "%.2f", value / eurRateValueSell));
-                            converterRubSell.setText(String.format(Locale.US, "%.2f", value / rubRateValueSell));
-                        }
-                    }
-                }
-            });
-        }
     }
 }
