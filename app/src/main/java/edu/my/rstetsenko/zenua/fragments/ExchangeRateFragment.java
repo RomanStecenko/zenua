@@ -33,22 +33,35 @@ import edu.my.rstetsenko.zenua.activities.MainActivity;
 import edu.my.rstetsenko.zenua.activities.RateProgressActivity;
 import edu.my.rstetsenko.zenua.data.RateBaseColumns;
 import edu.my.rstetsenko.zenua.data.RateContract;
-import edu.my.rstetsenko.zenua.sync.ZenUaSyncAdapter;
 
 public class ExchangeRateFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
+    public static ExchangeRateFragment newInstance(int sourceId) {
+        Bundle args = new Bundle();
+        args.putInt(ARG_SOURCE_ID, sourceId);
+        ExchangeRateFragment fragment = new ExchangeRateFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    private static final String ARG_SOURCE_ID = "arg_source_id";
     private static final String SHARE_TAG = " #ZenUA";
     private static final String LINK_OF_APP_ON_PLAY_MARKET = "https://play.google.com/store/apps";
-    private static final int EXCHANGE_RATE_LOADER_ID = 0;
 
     private ShareActionProvider mShareActionProvider;
-
     private TextView usdTextView, eurTextView, rubTextView;
     private TextView usdRateBuy, usdRateSell, eurRateBuy, eurRateSell, rubRateBuy, rubRateSell, description;
     private TextView updateDateTextView;
     private LinearLayout buySellTitles, buySellUSD, buySellEUR, buySellRUB;
     private Button sourceButton;
     private String shareString;
+    private int mSourceId;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mSourceId = getArguments().getInt(ARG_SOURCE_ID);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -80,6 +93,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         } else {
             rootView.setPadding(0, paddingTop, 0, paddingTop);
         }
+        toggleLayout();
         rootView.setOnClickListener(onClickListener);
         return rootView;
     }
@@ -94,13 +108,12 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
-        getLoaderManager().initLoader(EXCHANGE_RATE_LOADER_ID, null, this);
+        getLoaderManager().initLoader(mSourceId, null, this);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        toggleLayout(Utility.getPreferredSource());
         toggleActionBar();
         if (!Utility.isConnectedToInternet(getActivity())) {
             Toast.makeText(getActivity(),
@@ -138,10 +151,10 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
         }
     };
 
-    private void toggleLayout(int sourceNumber) {
+    private void toggleLayout() {
         sourceButton.setText(String.format("%s %s",getString(R.string.chart_of),
-                Utility.getSourceName(sourceNumber)));
-        boolean singleRate = Constants.singleRates.contains(sourceNumber);
+                Utility.getSourceName(mSourceId)));
+        boolean singleRate = Constants.singleRates.contains(mSourceId);
         if (singleRate) {
             usdTextView.setVisibility(View.VISIBLE);
             eurTextView.setVisibility(View.VISIBLE);
@@ -170,10 +183,6 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
                 actionBar.show();
             }
         }
-    }
-
-    private void loadData(){
-            ZenUaSyncAdapter.syncImmediately(getActivity());
     }
 
     private void setRate(double usd, double eur, double rub) {
@@ -222,12 +231,11 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        int sourceId = Utility.getPreferredSource();
-        Uri uri = Constants.singleRates.contains(sourceId) ?
-                RateContract.RateEntry.buildRateSourceIdWithLastDate(sourceId):
-                RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithLastDate(sourceId);
+        Uri uri = Constants.singleRates.contains(mSourceId) ?
+                RateContract.RateEntry.buildRateSourceIdWithLastDate(mSourceId):
+                RateContract.DoubleRateEntry.buildDoubleRateSourceIdWithLastDate(mSourceId);
 
-        String[] projection = Constants.singleRates.contains(sourceId) ?
+        String[] projection = Constants.singleRates.contains(mSourceId) ?
                 Utility.RATE_COLUMNS : Utility.DOUBLE_RATE_COLUMNS;
 
         String sortOrder = RateBaseColumns.COLUMN_DATE + " DESC";
@@ -245,6 +253,7 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (!data.moveToFirst()) {
+            //TODO check if TextViews are empty and show Message
             return;
         }
         setUpdateDate(Utility.formatDate(data.getLong(Utility.COL_DATE)));
@@ -275,8 +284,12 @@ public class ExchangeRateFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {}
 
-    public void onSourceChanged() {
-        loadData();
-        getLoaderManager().restartLoader(EXCHANGE_RATE_LOADER_ID, null, this);
-    }
+//    public void updateFragmentInfo() {
+////        loadData();
+//        getLoaderManager().restartLoader(EXCHANGE_RATE_LOADER_ID, null, this);
+//    }
+//
+//    private void loadData(){
+//        ZenUaSyncAdapter.syncImmediately(getActivity());
+//    }
 }

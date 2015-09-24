@@ -32,6 +32,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 import edu.my.rstetsenko.zenua.Constants;
 import edu.my.rstetsenko.zenua.R;
@@ -51,9 +53,17 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String PRIVATE_CASH_REQUEST = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
     //    private static final String PRIVATE_NON_CASH_REQUEST= "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=11";
 //    private static final String INTERBANK_REQUEST= "http://api.minfin.com.ua/mb/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //MINFIN api, not works
-    private static final String INTERBANK_BANKS_REQUEST = "http://api.minfin.com.ua/summary/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //banks info from MINFIN
+    private static final String MINFIN_REQUEST = "http://api.minfin.com.ua/summary/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; //banks info from MINFIN
     //    private static final String CURRENCY_AUCTION_REQUEST= "http://api.minfin.com.ua/auction/info/4d18fc9525f199ed8ba09a535fe3367b6e3c39f1/"; // MINFIN Currency auction
     private static final String FINANCE_REQUEST = "http://resources.finance.ua/ua/public/currency-cash.json";
+
+    private static final List<String> SOURCES = Arrays.asList(
+            PRIVATE_CASH_REQUEST,
+            MINFIN_REQUEST,
+            CURRENCYLAYER_REQUEST,
+            OPEN_EXCHANGE_RATES_REQUEST,
+            FINANCE_REQUEST
+    );
 
     private static final int SYNC_INTERVAL = 60 * 180;
     private static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
@@ -72,46 +82,47 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
-        try {
-            URL url = new URL(prepareLinks()[0]);
+        for (String source : SOURCES) {
+            try {
+                URL url = new URL(source);
 
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.connect();
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.connect();
 
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                return;
-            }
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    return;
+                }
 
-            reader = new BufferedReader(new InputStreamReader(inputStream));
+                reader = new BufferedReader(new InputStreamReader(inputStream));
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line).append("\n");
-            }
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line).append("\n");
+                }
 
-            if (buffer.length() == 0) {
-                return;
-            }
-            parseJson(buffer.toString());
+                if (buffer.length() == 0) {
+                    return;
+                }
+                parseJson(buffer.toString(), SOURCES.indexOf(source));
 
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-            Log.e(Constants.LOG_TAG, "Error ", e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(Constants.LOG_TAG, "Error closing stream", e);
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+                Log.e(Constants.LOG_TAG, "Error ", e);
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(Constants.LOG_TAG, "Error closing stream", e);
+                    }
                 }
             }
         }
-
     }
 
     /**
@@ -206,24 +217,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
         getSyncAccount(context);
     }
 
-    private String[] prepareLinks() {
-        switch (Utility.getPreferredSource()) {
-            case Constants.PRIVATE:
-                return new String[]{PRIVATE_CASH_REQUEST};
-            case Constants.MIN_FIN:
-                return new String[]{INTERBANK_BANKS_REQUEST};
-            case Constants.CURRENCYLAYER:
-                return new String[]{CURRENCYLAYER_REQUEST};
-            case Constants.OPEN_EXCHANGE_RATES:
-                return new String[]{OPEN_EXCHANGE_RATES_REQUEST};
-            case Constants.FINANCE:
-                return new String[]{FINANCE_REQUEST};
-            default:
-                return null;
-        }
-    }
-
-    private void parseJson(String jsonString) throws JSONException {
+    private void parseJson(String jsonString, int sourceId) throws JSONException {
 
         //openexchangerates.org structure:
         String timestamp = "timestamp"; //long
@@ -263,7 +257,7 @@ public class ZenUaSyncAdapter extends AbstractThreadedSyncAdapter {
         long receivedTimestamp;
 
         try {
-            switch (Utility.getPreferredSource()) {
+            switch (sourceId) {
                 case Constants.PRIVATE:
                     JSONArray privateJsonArray = new JSONArray(jsonString);
                     JSONObject rubJson = privateJsonArray.getJSONObject(0);

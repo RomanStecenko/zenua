@@ -9,7 +9,11 @@ import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -28,13 +32,11 @@ import edu.my.rstetsenko.zenua.sync.ZenUaSyncAdapter;
 
 
 public class MainActivity extends ActionBarActivity {
-    private final String RATE_FRAGMENT_TAG = "RFTAG";
 
     private VideoView videoView;
     private MenuItem soundItem;
     private MediaPlayer mediaPlayer;
     private boolean isPlayerPrepared = false;
-    private int mSourceId;
     private View container;
     private int screenHeight, screenWidth;
 
@@ -46,10 +48,12 @@ public class MainActivity extends ActionBarActivity {
         getWindow().setAttributes(attributes);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        mSourceId = Utility.getPreferredSource();
         setContentView(R.layout.activity_main);
 
         container = findViewById(R.id.container);
+        ViewPager mPager = (ViewPager) findViewById(R.id.pager);
+        PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
         getScreenSize();
 
         videoView = (VideoView) findViewById(R.id.video_view);
@@ -70,12 +74,6 @@ public class MainActivity extends ActionBarActivity {
                 mp.setLooping(true);
             }
         });
-
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ExchangeRateFragment(), RATE_FRAGMENT_TAG)
-                    .commit();
-        }
         ZenUaSyncAdapter.initializeSyncAdapter(this);
         //TODO handle VideoView state. maybe migrate selecting of sources from settings to navigation drawer
     }
@@ -96,15 +94,6 @@ public class MainActivity extends ActionBarActivity {
         if (Utility.isSoundOn() && isPlayerPrepared && !mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             LogMessage("Start mediaPlayer onResume");
-        }
-        int sourceId = Utility.getPreferredSource();
-        if (sourceId != mSourceId) {
-            ExchangeRateFragment erf = (ExchangeRateFragment) getSupportFragmentManager().findFragmentByTag(RATE_FRAGMENT_TAG);
-            if (null != erf) {
-                erf.onSourceChanged();
-                LogMessage("MyActivity update via onSourceChanged");
-            }
-            mSourceId = sourceId;
         }
         LogMessage("onResume");
     }
@@ -239,5 +228,21 @@ public class MainActivity extends ActionBarActivity {
 
     private void LogMessage(String msg) {
         Log.d(Constants.LOG_TAG, msg);
+    }
+
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int sourceId) {
+            return ExchangeRateFragment.newInstance(sourceId);
+        }
+
+        @Override
+        public int getCount() {
+            return Constants.SOURCES_COUNT;
+        }
     }
 }

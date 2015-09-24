@@ -11,6 +11,8 @@ public class Constants {
     public static final String LOG_TAG = "ZenUA_TAG";
     public static final String EXTRA_SOURCE = "extra_source";
 
+    public static final int SOURCES_COUNT = 5;
+
     public static final int PRIVATE = 0;
     public static final int MIN_FIN = 1;
     public static final int CURRENCYLAYER = 2;
